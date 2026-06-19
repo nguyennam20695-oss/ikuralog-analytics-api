@@ -234,7 +234,7 @@ async function loadData(days=30){
   const status = document.getElementById('status');
   status.textContent = 'Đang tải dữ liệu GA4 '+days+' ngày...';
   try{
-    const res = await fetch('/api/summary?days='+days);
+    const res = await fetch('/api/summary?days='+days+'&t='+Date.now(), { cache: 'no-store' });
     const data = await res.json();
     if(!data.ok) throw new Error(data.error || 'API error');
 
@@ -253,7 +253,7 @@ async function loadData(days=30){
     document.getElementById('events').innerHTML = rows(data.events,'eventName','eventCount','event');
     document.getElementById('screens').innerHTML = rows(data.screens,'unifiedScreenName','screenPageViews','screen');
 
-    status.textContent = 'Đã cập nhật '+days+' ngày: ' + new Date(data.updatedAt).toLocaleString();
+    status.textContent = 'Đã cập nhật dữ liệu '+days+' ngày: ' + new Date(data.updatedAt).toLocaleString();
   }catch(e){
     status.textContent = 'Lỗi: ' + e.message;
   }
@@ -267,8 +267,9 @@ loadData(30);
 
 app.get('/api/summary', async (req, res) => {
   try {
-    const days = Math.min(Math.max(Number(req.query.days || 30), 7), 90);
-    const startDate = `${days}daysAgo`;
+    const requestedDays = Number(req.query.days || 30);
+    const days = [7, 30, 90].includes(requestedDays) ? requestedDays : 30;
+    const startDate = days + 'daysAgo';
     const [dau, mau, countries, events, devices, versions, languages, screens, dailyUsers, newUsers] = await Promise.all([
       safeReport({ startDate:'today', metrics:['activeUsers'] }),
       safeReport({ startDate:'30daysAgo', metrics:['activeUsers'] }),
