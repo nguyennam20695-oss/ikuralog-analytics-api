@@ -82,37 +82,36 @@ app.get('/dashboard', requireDashboardAuth, (req, res) => {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>IkuraLog Analytics</title>
 <style>
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f3f6fb;margin:0;color:#0f172a}
-header{padding:24px 28px;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;gap:16px}
-h1{margin:0;font-size:28px}h2{margin:0 0 12px;font-size:18px}
-button{background:#2563eb;color:#fff;border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer}
-button.secondary{background:#e2e8f0;color:#0f172a}
-main{padding:24px;max-width:1220px;margin:auto}
-.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
-.section{margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.card{background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:18px;box-shadow:0 8px 24px rgba(15,23,42,.05)}
-.label{color:#64748b;font-weight:700;font-size:13px}.num{font-size:34px;font-weight:900;margin-top:8px}
-.status{color:#16a34a;font-weight:800;margin-top:8px}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f4f7fb;margin:0;color:#0f172a}
+header{position:sticky;top:0;z-index:5;padding:22px 28px;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;gap:16px}
+h1{margin:0;font-size:30px}h2{margin:0 0 14px;font-size:20px}.sub{color:#64748b;font-weight:700;margin-top:6px}
+button{background:#2563eb;color:#fff;border:0;border-radius:14px;padding:12px 16px;font-weight:900;cursor:pointer}
+button.secondary{background:#e2e8f0;color:#0f172a}.active{background:#0f172a!important;color:#fff!important}
+main{padding:24px;max-width:1240px;margin:auto}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}.section{margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:22px;padding:20px;box-shadow:0 10px 28px rgba(15,23,42,.06)}
+.label{color:#64748b;font-weight:800;font-size:13px}.num{font-size:38px;font-weight:950;margin-top:8px}.good{color:#16a34a}.warn{color:#f59e0b}.bad{color:#dc2626}
+.status{color:#16a34a;font-weight:900;margin-top:8px}
 table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;font-size:14px}th{color:#64748b;background:#f8fafc}
-.bar{height:10px;background:#e5e7eb;border-radius:99px;overflow:hidden}.fill{height:100%;background:#2563eb;border-radius:99px}
-.chart{height:210px;display:flex;align-items:end;gap:6px;border-bottom:1px solid #e5e7eb;padding-top:18px}
-.col{flex:1;background:#2563eb;border-radius:6px 6px 0 0;min-width:4px;position:relative}
-.col span{display:none;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:11px;background:#0f172a;color:#fff;padding:3px 6px;border-radius:6px;white-space:nowrap}.col:hover span{display:block}
-.note{color:#64748b;font-size:13px;margin-top:10px}
+.bar{height:9px;background:#e5e7eb;border-radius:999px;overflow:hidden;min-width:70px}.fill{height:100%;background:linear-gradient(90deg,#2563eb,#7c3aed);border-radius:999px}
+.chartBox{height:280px;border-radius:18px;background:linear-gradient(180deg,#f8fbff,#fff);border:1px solid #e5e7eb;padding:12px;overflow:hidden}
+svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;stroke:#2563eb;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}.area{fill:#2563eb;opacity:.10}.dot{fill:#2563eb}.tick{fill:#64748b;font-size:11px}
+.note{color:#64748b;font-size:13px;margin-top:10px;line-height:1.5}.insight{background:#f8fafc;border-left:5px solid #2563eb;padding:12px 14px;border-radius:14px;margin-top:12px;font-weight:700}
 .filters{display:flex;gap:8px;flex-wrap:wrap}
-@media(max-width:900px){.grid,.section{grid-template-columns:1fr}header{display:block}.filters{margin-top:12px}}
+@media(max-width:950px){.grid,.section{grid-template-columns:1fr}header{display:block}.filters{margin-top:12px}}
 </style>
 </head>
 <body>
 <header>
   <div>
     <h1>IkuraLog Analytics</h1>
+    <div class="sub">Bảng theo dõi tăng trưởng và hành vi người dùng thật</div>
     <div id="status" class="status">Đang tải dữ liệu GA4...</div>
   </div>
   <div class="filters">
-    <button class="secondary" onclick="loadData(7)">7 ngày</button>
-    <button class="secondary" onclick="loadData(30)">30 ngày</button>
-    <button class="secondary" onclick="loadData(90)">90 ngày</button>
+    <button id="btn7" class="secondary" onclick="loadData(7)">7 ngày</button>
+    <button id="btn30" class="secondary" onclick="loadData(30)">30 ngày</button>
+    <button id="btn90" class="secondary" onclick="loadData(90)">90 ngày</button>
     <button onclick="loadData(currentDays)">Cập nhật</button>
   </div>
 </header>
@@ -120,37 +119,74 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;bor
   <div class="grid">
     <div class="card"><div class="label">Người dùng hôm nay</div><div class="num" id="dau">-</div></div>
     <div class="card"><div class="label">Người dùng 30 ngày</div><div class="num" id="mau">-</div></div>
-    <div class="card"><div class="label">User mới</div><div class="num" id="newUsers">-</div></div>
-    <div class="card"><div class="label">User quay lại ước tính</div><div class="num" id="returningUsers">-</div></div>
-    <div class="card"><div class="label">Người dùng ở Nhật</div><div class="num" id="japan">-</div></div>
+    <div class="card"><div class="label">Người dùng mới</div><div class="num" id="newUsers">-</div></div>
+    <div class="card"><div class="label">Quay lại ước tính</div><div class="num" id="returningUsers">-</div></div>
+    <div class="card"><div class="label">User ở Nhật</div><div class="num" id="japan">-</div></div>
   </div>
 
-  <section class="card">
-    <h2>Người dùng theo ngày</h2>
-    <div id="dailyChart" class="chart"></div>
-    <div class="note">Dùng active users theo ngày từ GA4. Bộ lọc 7/30/90 ngày ở góc trên.</div>
+  <section class="card" style="margin-top:18px">
+    <h2>Xu hướng người dùng theo ngày</h2>
+    <div id="dailyChart" class="chartBox"></div>
+    <div id="growthInsight" class="insight">Đang phân tích xu hướng...</div>
   </section>
 
   <div class="section">
-    <div class="card"><h2>Quốc gia</h2><table><thead><tr><th>Quốc gia</th><th>User</th><th></th></tr></thead><tbody id="countries"></tbody></table></div>
-    <div class="card"><h2>Ngôn ngữ</h2><table><thead><tr><th>Ngôn ngữ</th><th>User</th><th></th></tr></thead><tbody id="languages"></tbody></table></div>
-    <div class="card"><h2>Phiên bản app</h2><table><thead><tr><th>Version</th><th>User</th><th></th></tr></thead><tbody id="versions"></tbody></table></div>
-    <div class="card"><h2>Thiết bị</h2><table><thead><tr><th>Thiết bị</th><th>User</th><th></th></tr></thead><tbody id="devices"></tbody></table></div>
-    <div class="card"><h2>Sự kiện quan trọng</h2><table><thead><tr><th>Event</th><th>Số lần</th><th></th></tr></thead><tbody id="events"></tbody></table></div>
-    <div class="card"><h2>Màn hình được mở nhiều</h2><table><thead><tr><th>Màn hình</th><th>Lượt mở</th><th></th></tr></thead><tbody id="screens"></tbody></table><div class="note">Nếu còn “Không xác định”, cần chờ user dùng bản app mới có screen tracking.</div></div>
+    <div class="card"><h2>Quốc gia</h2><table><thead><tr><th>Quốc gia</th><th>User</th><th>Tỷ lệ</th></tr></thead><tbody id="countries"></tbody></table></div>
+    <div class="card"><h2>Ngôn ngữ</h2><table><thead><tr><th>Ngôn ngữ</th><th>User</th><th>Tỷ lệ</th></tr></thead><tbody id="languages"></tbody></table></div>
+    <div class="card"><h2>Phiên bản app</h2><table><thead><tr><th>Phiên bản</th><th>User</th><th>Tỷ lệ</th></tr></thead><tbody id="versions"></tbody></table></div>
+    <div class="card"><h2>Thiết bị</h2><table><thead><tr><th>Thiết bị</th><th>User</th><th>Tỷ lệ</th></tr></thead><tbody id="devices"></tbody></table></div>
+    <div class="card"><h2>Sự kiện quan trọng</h2><table><thead><tr><th>Sự kiện</th><th>Số lần</th><th>Tỷ lệ</th></tr></thead><tbody id="events"></tbody></table></div>
+    <div class="card"><h2>Màn hình được mở nhiều</h2><table><thead><tr><th>Màn hình</th><th>Lượt mở</th><th>Tỷ lệ</th></tr></thead><tbody id="screens"></tbody></table><div class="note">Nếu còn “Không xác định”, nghĩa là app chưa gửi tên màn hình đủ rõ. Cần user dùng bản mới có screen tracking.</div></div>
   </div>
 </main>
 <script>
 let currentDays = 30;
-function cleanName(v){ return (!v || v === '(not set)') ? 'Không xác định' : v; }
+
+const eventNames = {
+  user_engagement:'Tương tác người dùng',
+  screen_view:'Xem màn hình',
+  app_open_test:'Mở app bản test',
+  main_shell_opened:'Mở khung chính',
+  session_start:'Bắt đầu phiên',
+  shift_created:'Tạo ca làm',
+  first_open:'Cài đặt / mở lần đầu',
+  onboarding_completed:'Hoàn thành giới thiệu',
+  job_created:'Tạo công việc',
+  app_update:'Cập nhật ứng dụng',
+  app_open_custom:'Mở app',
+  app_remove:'Gỡ ứng dụng',
+  shift_started:'Bắt đầu ca',
+  shift_finished:'Kết thúc ca'
+};
+
+const screenNames = {
+  home_screen:'Trang chủ',
+  home:'Trang chủ',
+  shifts_screen:'Lịch làm',
+  jobs_screen:'Công việc',
+  stats_screen:'Thống kê',
+  settings_screen:'Cài đặt'
+};
+
+function cleanName(v){
+  if(!v || v === '(not set)') return 'Không xác định';
+  return v;
+}
+function displayName(v, type){
+  v = cleanName(v);
+  if(type === 'event') return eventNames[v] || v;
+  if(type === 'screen') return screenNames[v] || v;
+  return v;
+}
 function maxMetric(rows, metric){ return Math.max(...(rows||[]).map(r => r.metrics?.[metric] || 0), 1); }
-function rows(data, dim, metric){
+function rows(data, dim, metric, type=''){
   const max = maxMetric(data, metric);
   return (data||[]).map(r => {
-    const name = cleanName(r.dimensions?.[dim]);
+    const raw = cleanName(r.dimensions?.[dim]);
+    const name = displayName(raw, type);
     const value = r.metrics?.[metric] ?? 0;
     const width = Math.round((value / max) * 100);
-    return '<tr><td>'+name+'</td><td>'+value+'</td><td><div class="bar"><div class="fill" style="width:'+width+'%"></div></div></td></tr>';
+    return '<tr><td title="'+raw+'">'+name+'</td><td>'+value+'</td><td><div class="bar"><div class="fill" style="width:'+width+'%"></div></div></td></tr>';
   }).join('');
 }
 function dateLabel(v){
@@ -158,16 +194,43 @@ function dateLabel(v){
   return v.slice(4,6)+'/'+v.slice(6,8);
 }
 function drawDailyChart(rows){
-  const el = document.getElementById('dailyChart');
-  const max = maxMetric(rows, 'activeUsers');
-  el.innerHTML = (rows||[]).map(r => {
-    const value = r.metrics?.activeUsers || 0;
-    const h = Math.max(4, Math.round((value / max) * 190));
-    return '<div class="col" style="height:'+h+'px"><span>'+dateLabel(r.dimensions?.date)+': '+value+'</span></div>';
-  }).join('');
+  const box = document.getElementById('dailyChart');
+  rows = (rows||[]).filter(r=>r.dimensions?.date).sort((a,b)=>String(a.dimensions.date).localeCompare(String(b.dimensions.date)));
+  const values = rows.map(r=>r.metrics?.activeUsers||0);
+  const max = Math.max(...values, 1);
+  const w = 1100, h = 250, pad = 34;
+  const step = rows.length > 1 ? (w-pad*2)/(rows.length-1) : 0;
+  const points = rows.map((r,i)=>{
+    const x = pad + i*step;
+    const y = h - pad - ((r.metrics?.activeUsers||0)/max)*(h-pad*2);
+    return {x,y,v:r.metrics?.activeUsers||0,date:dateLabel(r.dimensions.date)};
+  });
+  const line = points.map(p=>p.x+','+p.y).join(' ');
+  const area = points.length ? pad+','+(h-pad)+' '+line+' '+(w-pad)+','+(h-pad) : '';
+  const ticks = points.filter((_,i)=> i===0 || i===points.length-1 || i%Math.ceil(points.length/6)===0);
+  box.innerHTML = '<svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none">'
+    + '<line class="axis" x1="'+pad+'" y1="'+(h-pad)+'" x2="'+(w-pad)+'" y2="'+(h-pad)+'"></line>'
+    + '<line class="axis" x1="'+pad+'" y1="'+pad+'" x2="'+pad+'" y2="'+(h-pad)+'"></line>'
+    + '<polygon class="area" points="'+area+'"></polygon>'
+    + '<polyline class="line" points="'+line+'"></polyline>'
+    + points.map(p=>'<circle class="dot"><title>'+p.date+': '+p.v+' user</title></circle>'.replace('<circle class="dot"', '<circle class="dot" cx="'+p.x+'" cy="'+p.y+'" r="5"')).join('')
+    + ticks.map(p=>'<text class="tick" x="'+p.x+'" y="'+(h-8)+'" text-anchor="middle">'+p.date+'</text>').join('')
+    + '<text class="tick" x="8" y="'+(pad+4)+'">'+max+'</text><text class="tick" x="8" y="'+(h-pad)+'">0</text>'
+    + '</svg>';
+
+  const first = values[0] || 0, last = values[values.length-1] || 0;
+  const diff = last - first;
+  const insight = document.getElementById('growthInsight');
+  if(values.length < 2) insight.textContent = 'Chưa đủ dữ liệu để nhận định xu hướng.';
+  else if(diff > 0) insight.innerHTML = '<span class="good">Tín hiệu tốt:</span> user cuối kỳ cao hơn đầu kỳ +' + diff + '.';
+  else if(diff < 0) insight.innerHTML = '<span class="bad">Cần chú ý:</span> user cuối kỳ thấp hơn đầu kỳ ' + diff + '. Cần kiểm tra onboarding, update app và nguồn tải.';
+  else insight.innerHTML = '<span class="warn">Đi ngang:</span> user chưa tăng rõ. Cần thêm kênh kéo người dùng mới.';
 }
 async function loadData(days=30){
   currentDays = days;
+  document.querySelectorAll('.filters .secondary').forEach(b=>b.classList.remove('active'));
+  const btn = document.getElementById('btn'+days); if(btn) btn.classList.add('active');
+
   const status = document.getElementById('status');
   status.textContent = 'Đang tải dữ liệu GA4 '+days+' ngày...';
   try{
@@ -187,8 +250,8 @@ async function loadData(days=30){
     document.getElementById('languages').innerHTML = rows(data.languages,'language','activeUsers');
     document.getElementById('versions').innerHTML = rows(data.versions,'appVersion','activeUsers');
     document.getElementById('devices').innerHTML = rows(data.devices,'deviceModel','activeUsers');
-    document.getElementById('events').innerHTML = rows(data.events,'eventName','eventCount');
-    document.getElementById('screens').innerHTML = rows(data.screens,'unifiedScreenName','screenPageViews');
+    document.getElementById('events').innerHTML = rows(data.events,'eventName','eventCount','event');
+    document.getElementById('screens').innerHTML = rows(data.screens,'unifiedScreenName','screenPageViews','screen');
 
     status.textContent = 'Đã cập nhật '+days+' ngày: ' + new Date(data.updatedAt).toLocaleString();
   }catch(e){
