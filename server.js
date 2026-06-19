@@ -98,7 +98,15 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;bor
 svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;stroke:#2563eb;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}.area{fill:#2563eb;opacity:.10}.dot{fill:#2563eb}.tick{fill:#64748b;font-size:11px}
 .note{color:#64748b;font-size:13px;margin-top:10px;line-height:1.5}.insight{background:#f8fafc;border-left:5px solid #2563eb;padding:12px 14px;border-radius:14px;margin-top:12px;font-weight:700}
 .filters{display:flex;gap:8px;flex-wrap:wrap}
-@media(max-width:950px){.grid,.section{grid-template-columns:1fr}header{display:block}.filters{margin-top:12px}}
+.summaryGrid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:16px;margin-bottom:18px}
+.summaryBox{background:#fff;border:1px solid #e5e7eb;border-radius:22px;padding:20px;box-shadow:0 10px 28px rgba(15,23,42,.06)}
+.summaryTitle{font-size:20px;font-weight:950;margin-bottom:10px}
+.summaryLine{padding:8px 0;border-bottom:1px solid #eef2f7;font-weight:750}
+.summaryLine:last-child{border-bottom:0}
+.tag{display:inline-block;padding:4px 9px;border-radius:999px;font-size:12px;font-weight:900;margin-right:6px}
+.tag.good{background:#dcfce7;color:#166534}.tag.warn{background:#fef3c7;color:#92400e}.tag.bad{background:#fee2e2;color:#991b1b}
+.todo{margin:0;padding-left:18px}.todo li{margin:8px 0;font-weight:750}
+@media(max-width:950px){.grid,.section,.summaryGrid{grid-template-columns:1fr}header{display:block}.filters{margin-top:12px}}
 </style>
 </head>
 <body>
@@ -116,6 +124,21 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
   </div>
 </header>
 <main>
+  <section class="summaryGrid">
+    <div class="summaryBox">
+      <div class="summaryTitle">Tổng quan vận hành</div>
+      <div id="autoSummary">Đang phân tích dữ liệu...</div>
+    </div>
+    <div class="summaryBox">
+      <div class="summaryTitle">Cảnh báo</div>
+      <div id="autoWarnings">Đang kiểm tra...</div>
+    </div>
+    <div class="summaryBox">
+      <div class="summaryTitle">Việc nên làm tiếp</div>
+      <ul id="autoTodos" class="todo"></ul>
+    </div>
+  </section>
+
   <div class="grid">
     <div class="card"><div class="label">Người dùng hôm nay</div><div class="num" id="dau">-</div></div>
     <div class="card"><div class="label">Người dùng 30 ngày</div><div class="num" id="mau">-</div></div>
@@ -226,6 +249,83 @@ function drawDailyChart(rows){
   else if(diff < 0) insight.innerHTML = '<span class="bad">Cần chú ý:</span> user cuối kỳ thấp hơn đầu kỳ ' + diff + '. Cần kiểm tra onboarding, update app và nguồn tải.';
   else insight.innerHTML = '<span class="warn">Đi ngang:</span> user chưa tăng rõ. Cần thêm kênh kéo người dùng mới.';
 }
+function metricByEvent(data, eventName){
+  return (data.events||[]).find(r => r.dimensions?.eventName === eventName)?.metrics?.eventCount || 0;
+}
+function activeByVersion(data, version){
+  return (data.versions||[]).find(r => r.dimensions?.appVersion === version)?.metrics?.activeUsers || 0;
+}
+function latestVersion(data){
+  const versions = (data.versions||[])
+    .map(r => r.dimensions?.appVersion)
+    .filter(Boolean)
+    .sort((a,b)=>b.localeCompare(a, undefined, {numeric:true}));
+  return versions[0] || '';
+}
+function pct(a,b){
+  if(!b) return 0;
+  return Math.round((a/b)*1000)/10;
+}
+function renderAutoSummary(data){
+  const mau = data.mau || 0;
+  const newUsers = data.newUsers || 0;
+  const returning = data.returningUsersEstimate || 0;
+  const returnRate = pct(returning, mau);
+
+  const japan = (data.countries||[]).find(r => r.dimensions?.country === 'Japan')?.metrics?.activeUsers || 0;
+  const japanRate = pct(japan, mau);
+
+  const firstOpen = metricByEvent(data, 'first_open');
+  const onboarding = metricByEvent(data, 'onboarding_completed');
+  const jobCreated = metricByEvent(data, 'job_created');
+  const shiftCreated = metricByEvent(data, 'shift_created');
+
+  const onboardingRate = pct(onboarding, firstOpen);
+  const jobRate = pct(jobCreated, firstOpen);
+  const shiftRate = pct(shiftCreated, firstOpen);
+
+  const latest = latestVersion(data);
+  const latestUsers = activeByVersion(data, latest);
+  const latestRate = pct(latestUsers, mau);
+
+  const unknownScreens = (data.screens||[])
+    .filter(r => !r.dimensions?.unifiedScreenName || r.dimensions?.unifiedScreenName === '(not set)')
+    .reduce((sum,r)=>sum+(r.metrics?.screenPageViews||0),0);
+  const totalScreens = (data.screens||[]).reduce((sum,r)=>sum+(r.metrics?.screenPageViews||0),0);
+  const unknownScreenRate = pct(unknownScreens, totalScreens);
+
+  const health =
+    returnRate >= 20 ? ['good','Ổn'] :
+    returnRate >= 10 ? ['warn','Cần theo dõi'] :
+    ['bad','Giữ chân yếu'];
+
+  document.getElementById('autoSummary').innerHTML = [
+    '<div class="summaryLine"><span class="tag '+health[0]+'">'+health[1]+'</span> Tỷ lệ quay lại: <b>'+returnRate+'%</b></div>',
+    '<div class="summaryLine">User mới: <b>'+newUsers+'</b> / MAU <b>'+mau+'</b></div>',
+    '<div class="summaryLine">User Nhật: <b>'+japan+'</b> ('+japanRate+'%)</div>',
+    '<div class="summaryLine">Onboarding: <b>'+onboarding+'</b> / first_open <b>'+firstOpen+'</b> ('+onboardingRate+'%)</div>',
+    '<div class="summaryLine">Tạo công việc: <b>'+jobCreated+'</b> ('+jobRate+'% so với first_open)</div>',
+    '<div class="summaryLine">Tạo ca làm: <b>'+shiftCreated+'</b> ('+shiftRate+'% so với first_open)</div>',
+    '<div class="summaryLine">Bản mới nhất '+latest+': <b>'+latestUsers+'</b> user ('+latestRate+'%)</div>'
+  ].join('');
+
+  const warnings = [];
+  if(returnRate < 10) warnings.push('<div class="summaryLine"><span class="tag bad">Cao</span> User quay lại thấp. Cần cải thiện onboarding và lý do quay lại app.</div>');
+  if(unknownScreenRate > 50) warnings.push('<div class="summaryLine"><span class="tag bad">Cao</span> Screen tracking chưa rõ: '+unknownScreenRate+'% lượt màn hình không xác định.</div>');
+  if(latestRate < 50) warnings.push('<div class="summaryLine"><span class="tag warn">Vừa</span> Dưới 50% user đang ở bản mới nhất. Cần thúc đẩy update.</div>');
+  if(japanRate >= 60) warnings.push('<div class="summaryLine"><span class="tag good">Tốt</span> Nhật đang là thị trường chính, đúng hướng IkuraLog.</div>');
+  if(firstOpen > 0 && onboardingRate < 70) warnings.push('<div class="summaryLine"><span class="tag warn">Vừa</span> Onboarding chưa đủ mạnh: '+onboardingRate+'%.</div>');
+  document.getElementById('autoWarnings').innerHTML = warnings.join('') || '<div class="summaryLine"><span class="tag good">OK</span> Chưa có cảnh báo lớn.</div>';
+
+  const todos = [];
+  if(unknownScreenRate > 50) todos.push('Gắn logScreenView cho Trang chủ, Lịch làm, Công việc, Thống kê, Cài đặt.');
+  if(returnRate < 10) todos.push('Tạo lý do quay lại app: nhắc ca làm, thông báo lương tháng, widget thống kê nhanh.');
+  if(onboardingRate < 70) todos.push('Rút gọn onboarding và đẩy user tới bước tạo công việc đầu tiên.');
+  if(latestRate < 50) todos.push('Upload bản mới ổn định và theo dõi tỷ lệ cập nhật theo version.');
+  todos.push('Theo dõi lại funnel sau 3–7 ngày để tránh kết luận quá sớm.');
+  document.getElementById('autoTodos').innerHTML = todos.map(t=>'<li>'+t+'</li>').join('');
+}
+
 async function loadData(days=30){
   currentDays = days;
   document.querySelectorAll('.filters .secondary').forEach(b=>b.classList.remove('active'));
@@ -245,6 +345,7 @@ async function loadData(days=30){
     document.getElementById('returningUsers').textContent = data.returningUsersEstimate || 0;
     document.getElementById('japan').textContent = japan;
 
+    renderAutoSummary(data);
     drawDailyChart(data.dailyUsers);
     document.getElementById('countries').innerHTML = rows(data.countries,'country','activeUsers');
     document.getElementById('languages').innerHTML = rows(data.languages,'language','activeUsers');
