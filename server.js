@@ -10,6 +10,30 @@ const port = Number(process.env.PORT || 8787);
 const propertyId = process.env.GA4_PROPERTY_ID;
 const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
 
+const dashboardPassword = process.env.DASHBOARD_PASSWORD || '';
+
+function requireDashboardAuth(req, res, next) {
+  if (!dashboardPassword) return next();
+
+  const password = req.query.password || req.headers['x-dashboard-password'];
+
+  if (password === dashboardPassword) return next();
+
+  return res.status(401).type('html').send(`<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>IkuraLog Analytics Login</title></head>
+<body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f3f6fb;margin:0;display:flex;align-items:center;justify-content:center;height:100vh">
+<form method="GET" action="/dashboard" style="background:white;padding:28px;border-radius:18px;box-shadow:0 10px 30px rgba(15,23,42,.12);width:min(360px,90vw)">
+<h1 style="margin-top:0">IkuraLog Analytics</h1>
+<p style="color:#64748b">Nhập mật khẩu dashboard.</p>
+<input name="password" type="password" placeholder="Password" autofocus style="width:100%;box-sizing:border-box;padding:14px;border:1px solid #cbd5e1;border-radius:12px;font-size:16px">
+<button style="margin-top:14px;width:100%;padding:14px;border:0;border-radius:12px;background:#2563eb;color:white;font-weight:800;font-size:16px">Đăng nhập</button>
+</form>
+</body>
+</html>`);
+}
+
+
 const client = serviceAccountJson
   ? new BetaAnalyticsDataClient({
       credentials: JSON.parse(serviceAccountJson),
@@ -50,7 +74,7 @@ app.get('/healthz', (req, res) => {
   res.json({ ok: true, status: 'healthy', service: 'ikuralog-analytics-api' });
 });
 
-app.get('/dashboard', (req, res) => {
+app.get('/dashboard', requireDashboardAuth, (req, res) => {
   res.type('html').send(`<!doctype html>
 <html lang="vi">
 <head>
