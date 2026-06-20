@@ -40,6 +40,37 @@ const client = serviceAccountJson
     })
   : new BetaAnalyticsDataClient();
 
+
+async function getTotalDownloads() {
+  const [response] = await analyticsDataClient.runReport({
+    property: `properties/${GA4_PROPERTY_ID}`,
+    dateRanges: [
+      {
+        startDate: '2020-01-01',
+        endDate: 'today',
+      },
+    ],
+    metrics: [
+      {
+        name: 'eventCount',
+      },
+    ],
+    dimensionFilter: {
+      filter: {
+        fieldName: 'eventName',
+        stringFilter: {
+          matchType: 'EXACT',
+          value: 'first_open',
+        },
+      },
+    },
+  });
+
+  const value = response.rows?.[0]?.metricValues?.[0]?.value || '0';
+  return Number(value) || 0;
+}
+
+
 async function report({ startDate='30daysAgo', endDate='today', dimensions=[], metrics=[], limit=20 }) {
   const [res] = await client.runReport({
     property: `properties/${propertyId}`,
@@ -63,6 +94,7 @@ async function safeReport(args) {
 
 app.get('/', (req, res) => {
   res.json({
+    totalDownloads,
     ok: true,
     service: 'ikuralog-analytics-api',
     endpoints: ['/healthz', '/api/summary', '/dashboard'],
@@ -140,7 +172,14 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
   </section>
 
   <div class="grid">
-    <div class="card"><div class="label">Người dùng hôm nay</div><div class="num" id="dau">-</div></div>
+    
+        <div class="stat-card primary">
+          <div class="label">Tổng lượt tải</div>
+          <div class="value">${formatNumber(totalDownloads || 0)}</div>
+          <div class="hint">Tính theo lượt mở app lần đầu</div>
+        </div>
+
+<div class="card"><div class="label">Người dùng hôm nay</div><div class="num" id="dau">-</div></div>
     <div class="card"><div class="label">Người dùng 30 ngày</div><div class="num" id="mau">-</div></div>
     <div class="card"><div class="label">Người dùng mới</div><div class="num" id="newUsers">-</div></div>
     <div class="card"><div class="label">Người dùng quay lại</div><div class="num" id="returningusers">-</div></div>
