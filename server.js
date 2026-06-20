@@ -177,10 +177,10 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
 
   <div class="grid">
     
-        <div class="stat-card primary">
-          <div class="label">Tổng lượt tải</div>
-          <div class="value">${formatNumber(totalDownloads || 0)}</div>
-          <div class="hint">Tính theo lượt mở app lần đầu</div>
+        <div class="card">
+          <div class="label">Tổng lượt tải ước tính</div>
+          <div class="num" id="totalDownloads">-</div>
+          <div class="note">Tính theo số lần mở ứng dụng lần đầu</div>
         </div>
 
 <div class="card"><div class="label">Người dùng hôm nay</div><div class="num" id="dau">-</div></div>
@@ -385,6 +385,8 @@ async function loadData(days=30){
     document.getElementById('dau').textContent = data.dau || 0;
     document.getElementById('mau').textContent = data.mau || 0;
     document.getElementById('newUsers').textContent = data.newUsers || 0;
+    const firstOpenCount = (data.events||[]).find(r => r.dimensions?.eventName === 'first_open')?.metrics?.eventCount || 0;
+    document.getElementById('totalDownloads').textContent = firstOpenCount;
     document.getElementById('returningusers').textContent = data.returningusersEstimate || 0;
     document.getElementById('japan').textContent = japan;
 
