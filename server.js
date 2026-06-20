@@ -296,17 +296,17 @@ function drawDailyChart(rows){
   if(values.length < 2) insight.textContent = 'Chưa đủ dữ liệu để nhận định xu hướng.';
   else if(diff > 0) insight.innerHTML = '<span class="good">Tín hiệu tốt:</span> người dùng cuối kỳ cao hơn đầu kỳ +' + diff + '.';
   else if(diff < 0) insight.innerHTML = '<span class="bad">Cần chú ý:</span> người dùng cuối kỳ thấp hơn đầu kỳ ' + diff + '. Cần kiểm tra phần giới thiệu ban đầu, bản cập nhật và nguồn tải.';
-  else insight.innerHTML = '<span class="warn">Chưa tăng rõ:</span> user chưa tăng rõ. Cần thêm cách kéo người dùng mới.';
+  else insight.innerHTML = '<span class="warn">Chưa tăng rõ:</span> người dùng chưa tăng rõ. Cần thêm cách kéo người dùng mới.';
 }
-function metricByHoạt động(data, eventName){
+function metricByEvent(data, eventName){
   return (data.events||[]).find(r => r.dimensions?.eventName === eventName)?.metrics?.eventCount || 0;
 }
-function activeByPhiên bản(data, version){
-  return (data.versions||[]).find(r => r.dimensions?.appPhiên bản === version)?.metrics?.activeUsers || 0;
+function activeByVersion(data, version){
+  return (data.versions||[]).find(r => r.dimensions?.appVersion === version)?.metrics?.activeUsers || 0;
 }
-function latestPhiên bản(data){
+function latestVersion(data){
   const versions = (data.versions||[])
-    .map(r => r.dimensions?.appPhiên bản)
+    .map(r => r.dimensions?.appVersion)
     .filter(Boolean)
     .sort((a,b)=>b.localeCompare(a, undefined, {numeric:true}));
   return versions[0] || '';
@@ -324,24 +324,24 @@ function renderAutoSummary(data){
   const japan = (data.countries||[]).find(r => r.dimensions?.country === 'Japan')?.metrics?.activeUsers || 0;
   const japanRate = pct(japan, mau);
 
-  const firstOpen = metricByHoạt động(data, 'mở ứng dụng lần đầu');
-  const onboarding = metricByHoạt động(data, 'onboarding_completed');
-  const jobCreated = metricByHoạt động(data, 'job_created');
-  const shiftCreated = metricByHoạt động(data, 'shift_created');
+  const firstOpen = metricByEvent(data, 'first_open');
+  const onboarding = metricByEvent(data, 'onboarding_completed');
+  const jobCreated = metricByEvent(data, 'job_created');
+  const shiftCreated = metricByEvent(data, 'shift_created');
 
   const onboardingRate = pct(onboarding, firstOpen);
   const jobRate = pct(jobCreated, firstOpen);
   const shiftRate = pct(shiftCreated, firstOpen);
 
-  const latest = latestPhiên bản(data);
-  const latestusers = activeByPhiên bản(data, latest);
-  const latestRate = pct(latestusers, mau);
+  const latest = latestVersion(data);
+  const latestUsers = activeByVersion(data, latest);
+  const latestRate = pct(latestUsers, mau);
 
-  const unknownMàn hìnhs = (data.screens||[])
-    .filter(r => !r.dimensions?.unifiedMàn hìnhName || r.dimensions?.unifiedMàn hìnhName === '(not set)')
+  const unknownScreens = (data.screens||[])
+    .filter(r => !r.dimensions?.unifiedScreenName || r.dimensions?.unifiedScreenName === '(not set)')
     .reduce((sum,r)=>sum+(r.metrics?.screenPageViews||0),0);
-  const totalMàn hìnhs = (data.screens||[]).reduce((sum,r)=>sum+(r.metrics?.screenPageViews||0),0);
-  const unknownMàn hìnhRate = pct(unknownMàn hìnhs, totalMàn hìnhs);
+  const totalScreens = (data.screens||[]).reduce((sum,r)=>sum+(r.metrics?.screenPageViews||0),0);
+  const unknownScreenRate = pct(unknownScreens, totalScreens);
 
   const health =
     returnRate >= 20 ? ['good','Ổn'] :
@@ -353,21 +353,21 @@ function renderAutoSummary(data){
     '<div class="summaryLine">Người dùng mới: <b>'+newUsers+'</b> / người dùng trong khoảng chọn <b>'+mau+'</b></div>',
     '<div class="summaryLine">Người dùng tại Nhật: <b>'+japan+'</b> ('+japanRate+'%)</div>',
     '<div class="summaryLine">Giới thiệu ban đầu: <b>'+onboarding+'</b> / mở ứng dụng lần đầu <b>'+firstOpen+'</b> ('+onboardingRate+'%)</div>',
-    '<div class="summaryLine">Tạo nơi làm việc: <b>'+jobCreated+'</b> ('+jobRate+'% so với mở ứng dụng lần đầu)</div>',
-    '<div class="summaryLine">Tạo ca làm: <b>'+shiftCreated+'</b> ('+shiftRate+'% so với mở ứng dụng lần đầu)</div>',
-    '<div class="summaryLine">Bản mới nhất '+latest+': <b>'+latestusers+'</b> user ('+latestRate+'%)</div>'
+    '<div class="summaryLine">Số lần tạo nơi làm việc: <b>'+jobCreated+'</b></div>',
+    '<div class="summaryLine">Số lần tạo ca làm: <b>'+shiftCreated+'</b></div>',
+    '<div class="summaryLine">Bản mới nhất '+latest+': <b>'+latestUsers+'</b> user ('+latestRate+'%)</div>'
   ].join('');
 
   const warnings = [];
   if(returnRate < 10) warnings.push('<div class="summaryLine"><span class="tag bad">Cao</span> Người dùng quay lại thấp. Cần cải thiện onboarding và lý do quay lại app.</div>');
-  if(unknownMàn hìnhRate > 50) warnings.push('<div class="summaryLine"><span class="tag bad">Cao</span> Màn hình tracking chưa rõ: '+unknownMàn hìnhRate+'% lượt mở màn hình chưa biết rõ tên.</div>');
+  if(unknownScreenRate > 50) warnings.push('<div class="summaryLine"><span class="tag bad">Cao</span> Theo dõi màn hình chưa rõ: '+unknownScreenRate+'% lượt mở màn hình chưa biết rõ tên.</div>');
   if(latestRate < 50) warnings.push('<div class="summaryLine"><span class="tag warn">Vừa</span> Dưới 50% người dùng đang dùng bản mới nhất. Cần khuyến khích cập nhật.</div>');
   if(japanRate >= 60) warnings.push('<div class="summaryLine"><span class="tag good">Tốt</span> Nhật Bản đang là thị trường chính, đúng hướng của IkuraLog.</div>');
   if(firstOpen > 0 && onboardingRate < 70) warnings.push('<div class="summaryLine"><span class="tag warn">Vừa</span> Giới thiệu ban đầu chưa đủ mạnh: '+onboardingRate+'%.</div>');
   document.getElementById('autoWarnings').innerHTML = warnings.join('') || '<div class="summaryLine"><span class="tag good">OK</span> Chưa có cảnh báo lớn.</div>';
 
   const todos = [];
-  if(unknownMàn hìnhRate > 50) todos.push('Gắn logMàn hìnhView cho Trang chủ, Lịch làm, Công việc, Thống kê, Cài đặt.');
+  if(unknownScreenRate > 50) todos.push('Gắn logScreenView cho Trang chủ, Lịch làm, Công việc, Thống kê, Cài đặt.');
   if(returnRate < 10) todos.push('Tạo lý do để người dùng mở lại app: nhắc ca làm, báo lương tháng, thẻ thống kê nhanh.');
   if(onboardingRate < 70) todos.push('Rút gọn phần giới thiệu ban đầu và dẫn người dùng tới bước tạo nơi làm việc đầu tiên.');
   if(latestRate < 50) todos.push('Đưa bản mới ổn định lên store và theo dõi tỷ lệ cập nhật theo phiên bản.');
@@ -400,10 +400,10 @@ async function loadData(days=30){
     drawDailyChart(data.dailyUsers);
     document.getElementById('countries').innerHTML = rows(data.countries,'country','activeUsers');
     document.getElementById('languages').innerHTML = rows(data.languages,'language','activeUsers');
-    document.getElementById('versions').innerHTML = rows(data.versions,'appPhiên bản','activeUsers');
+    document.getElementById('versions').innerHTML = rows(data.versions,'appVersion','activeUsers');
     document.getElementById('devices').innerHTML = rows(data.devices,'deviceModel','activeUsers');
     document.getElementById('events').innerHTML = rows(data.events,'eventName','eventCount','event');
-    document.getElementById('screens').innerHTML = rows(data.screens,'unifiedMàn hìnhName','screenPageViews','screen');
+    document.getElementById('screens').innerHTML = rows(data.screens,'unifiedScreenName','screenPageViews','screen');
 
     status.textContent = 'Đã cập nhật dữ liệu '+days+' ngày: ' + new Date(data.updatedAt).toLocaleString();
   }catch(e){
