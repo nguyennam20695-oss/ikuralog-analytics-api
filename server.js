@@ -180,7 +180,7 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
         </div>
 
 <div class="card"><div class="label">Người dùng hôm nay</div><div class="num" id="dau">-</div></div>
-    <div class="card"><div class="label">Người dùng 30 ngày</div><div class="num" id="mau">-</div></div>
+    <div class="card"><div class="label">Người dùng trong khoảng chọn</div><div class="num" id="mau">-</div></div>
     <div class="card"><div class="label">Người dùng mới</div><div class="num" id="newUsers">-</div></div>
     <div class="card"><div class="label">Người dùng quay lại</div><div class="num" id="returningusers">-</div></div>
     <div class="card"><div class="label">Người dùng tại Nhật</div><div class="num" id="japan">-</div></div>
@@ -340,7 +340,7 @@ function renderAutoSummary(data){
 
   document.getElementById('autoSummary').innerHTML = [
     '<div class="summaryLine"><span class="tag '+health[0]+'">'+health[1]+'</span> Tỷ lệ người dùng quay lại: <b>'+returnRate+'%</b></div>',
-    '<div class="summaryLine">Người dùng mới: <b>'+newUsers+'</b> / người dùng 30 ngày <b>'+mau+'</b></div>',
+    '<div class="summaryLine">Người dùng mới: <b>'+newUsers+'</b> / người dùng trong khoảng chọn <b>'+mau+'</b></div>',
     '<div class="summaryLine">Người dùng tại Nhật: <b>'+japan+'</b> ('+japanRate+'%)</div>',
     '<div class="summaryLine">Giới thiệu ban đầu: <b>'+onboarding+'</b> / mở ứng dụng lần đầu <b>'+firstOpen+'</b> ('+onboardingRate+'%)</div>',
     '<div class="summaryLine">Tạo nơi làm việc: <b>'+jobCreated+'</b> ('+jobRate+'% so với mở ứng dụng lần đầu)</div>',
@@ -412,13 +412,13 @@ app.get('/api/summary', async (req, res) => {
     const startDate = days + 'daysAgo';
     const [dau, mau, countries, events, devices, versions, languages, screens, dailyUsers, newUsers] = await Promise.all([
       safeReport({ startDate:'today', metrics:['activeUsers'] }),
-      safeReport({ startDate:'30daysAgo', metrics:['activeUsers'] }),
+      safeReport({ startDate, metrics:['activeUsers'] }),
       safeReport({ startDate, dimensions:['country'], metrics:['activeUsers'], limit:10 }),
       safeReport({ startDate, dimensions:['eventName'], metrics:['eventCount'], limit:40 }),
       safeReport({ startDate, dimensions:['deviceModel'], metrics:['activeUsers'], limit:10 }),
-      safeReport({ startDate, dimensions:['appPhiên bản'], metrics:['activeUsers'], limit:10 }),
+      safeReport({ startDate, dimensions:['appVersion'], metrics:['activeUsers'], limit:10 }),
       safeReport({ startDate, dimensions:['language'], metrics:['activeUsers'], limit:10 }),
-      safeReport({ startDate, dimensions:['unifiedMàn hìnhName'], metrics:['screenPageViews'], limit:20 }),
+      safeReport({ startDate, dimensions:['unifiedScreenName'], metrics:['screenPageViews'], limit:20 }),
       safeReport({ startDate, dimensions:['date'], metrics:['activeUsers','newUsers','sessions'], limit:120 }),
       safeReport({ startDate, metrics:['newUsers'] })
     ]);
