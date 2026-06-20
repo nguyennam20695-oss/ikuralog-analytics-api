@@ -220,15 +220,17 @@ const eventNames = {
   app_open_test:'Mở app bản test',
   main_shell_opened:'Mở khung chính',
   session_start:'Bắt đầu phiên',
-  shift_created:'Tạo ca làm',
-  mở ứng dụng lần đầu:'Mở ứng dụng lần đầu',
+  first_open:'Mở ứng dụng lần đầu',
   onboarding_completed:'Hoàn thành giới thiệu',
   job_created:'Tạo nơi làm việc',
+  shift_created:'Tạo ca làm',
   app_update:'Cập nhật ứng dụng',
   app_open_custom:'Mở app',
   app_remove:'Gỡ ứng dụng',
-  shift_started:'Bắt đầu ca',
-  shift_finished:'Kết thúc ca'
+  home_tab_opened:'Mở Trang chủ',
+  shifts_tab_opened:'Mở Lịch làm',
+  jobs_tab_opened:'Mở Nơi làm việc',
+  stats_tab_opened:'Mở Thống kê'
 };
 
 const screenNames = {
