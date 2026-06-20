@@ -186,7 +186,7 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
 <div class="card"><div class="label">Người dùng hôm nay</div><div class="num" id="dau">-</div></div>
     <div class="card"><div class="label">Người dùng trong khoảng chọn</div><div class="num" id="mau">-</div></div>
     <div class="card"><div class="label">Người dùng mới</div><div class="num" id="newUsers">-</div></div>
-    <div class="card"><div class="label">Người dùng quay lại</div><div class="num" id="returningusers">-</div></div>
+    <div class="card"><div class="label">Người dùng quay lại</div><div class="num" id="returningUsers">-</div></div>
     <div class="card"><div class="label">Người dùng tại Nhật</div><div class="num" id="japan">-</div></div>
   </div>
 
@@ -207,6 +207,12 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
 </main>
 <script>
 let currentDays = 30;
+
+function setText(id, value){
+  const el = document.getElementById(id);
+  if(el) el.textContent = value;
+}
+
 
 const eventNames = {
   user_engagement:'Tương tác người dùng',
@@ -312,7 +318,7 @@ function pct(a,b){
 function renderAutoSummary(data){
   const mau = data.mau || 0;
   const newUsers = data.newUsers || 0;
-  const returning = data.returningusersEstimate || 0;
+  const returning = data.returningUsersEstimate || 0;
   const returnRate = pct(returning, mau);
 
   const japan = (data.countries||[]).find(r => r.dimensions?.country === 'Japan')?.metrics?.activeUsers || 0;
@@ -382,13 +388,13 @@ async function loadData(days=30){
     if(!data.ok) throw new Error(data.error || 'API error');
 
     const japan = (data.countries||[]).find(r => r.dimensions?.country === 'Japan')?.metrics?.activeUsers || 0;
-    document.getElementById('dau').textContent = data.dau || 0;
-    document.getElementById('mau').textContent = data.mau || 0;
-    document.getElementById('newUsers').textContent = data.newUsers || 0;
+    setText('dau', data.dau || 0);
+    setText('mau', data.mau || 0);
+    setText('newUsers', data.newUsers || 0);
     const firstOpenCount = (data.events||[]).find(r => r.dimensions?.eventName === 'first_open')?.metrics?.eventCount || 0;
-    document.getElementById('totalDownloads').textContent = firstOpenCount;
-    document.getElementById('returningusers').textContent = data.returningusersEstimate || 0;
-    document.getElementById('japan').textContent = japan;
+    setText('totalDownloads', firstOpenCount);
+    setText('returningUsers', data.returningUsersEstimate || 0);
+    setText('japan', japan);
 
     renderAutoSummary(data);
     drawDailyChart(data.dailyUsers);
@@ -435,7 +441,7 @@ app.get('/api/summary', async (req, res) => {
       dau: dau[0]?.metrics?.activeUsers || 0,
       mau: mau[0]?.metrics?.activeUsers || 0,
       newUsers: newUsers[0]?.metrics?.newUsers || 0,
-      returningusersEstimate: Math.max((mau[0]?.metrics?.activeUsers || 0) - (newUsers[0]?.metrics?.newUsers || 0), 0),
+      returningUsersEstimate: Math.max((mau[0]?.metrics?.activeUsers || 0) - (newUsers[0]?.metrics?.newUsers || 0), 0),
       countries,
       events,
       devices,
