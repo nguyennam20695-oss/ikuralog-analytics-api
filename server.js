@@ -34,6 +34,10 @@ function requireDashboardAuth(req, res, next) {
 }
 
 
+function formatNumber(value) {
+  return Number(value || 0).toLocaleString('vi-VN');
+}
+
 const client = serviceAccountJson
   ? new BetaAnalyticsDataClient({
       credentials: JSON.parse(serviceAccountJson),
