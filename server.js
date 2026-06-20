@@ -142,8 +142,8 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
   <div class="grid">
     <div class="card"><div class="label">Người dùng hôm nay</div><div class="num" id="dau">-</div></div>
     <div class="card"><div class="label">Người dùng 30 ngày</div><div class="num" id="mau">-</div></div>
-    <div class="card"><div class="label">Người dùng mới</div><div class="num" id="newNgười dùngs">-</div></div>
-    <div class="card"><div class="label">Người dùng quay lại</div><div class="num" id="returningNgười dùngs">-</div></div>
+    <div class="card"><div class="label">Người dùng mới</div><div class="num" id="newUsers">-</div></div>
+    <div class="card"><div class="label">Người dùng quay lại</div><div class="num" id="returningusers">-</div></div>
     <div class="card"><div class="label">Người dùng tại Nhật</div><div class="num" id="japan">-</div></div>
   </div>
 
@@ -219,14 +219,14 @@ function dateLabel(v){
 function drawDailyChart(rows){
   const box = document.getElementById('dailyChart');
   rows = (rows||[]).filter(r=>r.dimensions?.date).sort((a,b)=>String(a.dimensions.date).localeCompare(String(b.dimensions.date)));
-  const values = rows.map(r=>r.metrics?.activeNgười dùngs||0);
+  const values = rows.map(r=>r.metrics?.activeUsers||0);
   const max = Math.max(...values, 1);
   const w = 1100, h = 250, pad = 34;
   const step = rows.length > 1 ? (w-pad*2)/(rows.length-1) : 0;
   const points = rows.map((r,i)=>{
     const x = pad + i*step;
-    const y = h - pad - ((r.metrics?.activeNgười dùngs||0)/max)*(h-pad*2);
-    return {x,y,v:r.metrics?.activeNgười dùngs||0,date:dateLabel(r.dimensions.date)};
+    const y = h - pad - ((r.metrics?.activeUsers||0)/max)*(h-pad*2);
+    return {x,y,v:r.metrics?.activeUsers||0,date:dateLabel(r.dimensions.date)};
   });
   const line = points.map(p=>p.x+','+p.y).join(' ');
   const area = points.length ? pad+','+(h-pad)+' '+line+' '+(w-pad)+','+(h-pad) : '';
@@ -253,7 +253,7 @@ function metricByHoạt động(data, eventName){
   return (data.events||[]).find(r => r.dimensions?.eventName === eventName)?.metrics?.eventCount || 0;
 }
 function activeByPhiên bản(data, version){
-  return (data.versions||[]).find(r => r.dimensions?.appPhiên bản === version)?.metrics?.activeNgười dùngs || 0;
+  return (data.versions||[]).find(r => r.dimensions?.appPhiên bản === version)?.metrics?.activeUsers || 0;
 }
 function latestPhiên bản(data){
   const versions = (data.versions||[])
@@ -268,11 +268,11 @@ function pct(a,b){
 }
 function renderAutoSummary(data){
   const mau = data.mau || 0;
-  const newNgười dùngs = data.newNgười dùngs || 0;
-  const returning = data.returningNgười dùngsEstimate || 0;
+  const newUsers = data.newUsers || 0;
+  const returning = data.returningusersEstimate || 0;
   const returnRate = pct(returning, mau);
 
-  const japan = (data.countries||[]).find(r => r.dimensions?.country === 'Japan')?.metrics?.activeNgười dùngs || 0;
+  const japan = (data.countries||[]).find(r => r.dimensions?.country === 'Japan')?.metrics?.activeUsers || 0;
   const japanRate = pct(japan, mau);
 
   const firstOpen = metricByHoạt động(data, 'mở ứng dụng lần đầu');
@@ -285,8 +285,8 @@ function renderAutoSummary(data){
   const shiftRate = pct(shiftCreated, firstOpen);
 
   const latest = latestPhiên bản(data);
-  const latestNgười dùngs = activeByPhiên bản(data, latest);
-  const latestRate = pct(latestNgười dùngs, mau);
+  const latestusers = activeByPhiên bản(data, latest);
+  const latestRate = pct(latestusers, mau);
 
   const unknownMàn hìnhs = (data.screens||[])
     .filter(r => !r.dimensions?.unifiedMàn hìnhName || r.dimensions?.unifiedMàn hìnhName === '(not set)')
@@ -301,12 +301,12 @@ function renderAutoSummary(data){
 
   document.getElementById('autoSummary').innerHTML = [
     '<div class="summaryLine"><span class="tag '+health[0]+'">'+health[1]+'</span> Tỷ lệ người dùng quay lại: <b>'+returnRate+'%</b></div>',
-    '<div class="summaryLine">Người dùng mới: <b>'+newNgười dùngs+'</b> / người dùng 30 ngày <b>'+mau+'</b></div>',
+    '<div class="summaryLine">Người dùng mới: <b>'+newUsers+'</b> / người dùng 30 ngày <b>'+mau+'</b></div>',
     '<div class="summaryLine">Người dùng tại Nhật: <b>'+japan+'</b> ('+japanRate+'%)</div>',
     '<div class="summaryLine">Giới thiệu ban đầu: <b>'+onboarding+'</b> / mở ứng dụng lần đầu <b>'+firstOpen+'</b> ('+onboardingRate+'%)</div>',
     '<div class="summaryLine">Tạo nơi làm việc: <b>'+jobCreated+'</b> ('+jobRate+'% so với mở ứng dụng lần đầu)</div>',
     '<div class="summaryLine">Tạo ca làm: <b>'+shiftCreated+'</b> ('+shiftRate+'% so với mở ứng dụng lần đầu)</div>',
-    '<div class="summaryLine">Bản mới nhất '+latest+': <b>'+latestNgười dùngs+'</b> user ('+latestRate+'%)</div>'
+    '<div class="summaryLine">Bản mới nhất '+latest+': <b>'+latestusers+'</b> user ('+latestRate+'%)</div>'
   ].join('');
 
   const warnings = [];
@@ -338,19 +338,19 @@ async function loadData(days=30){
     const data = await res.json();
     if(!data.ok) throw new Error(data.error || 'API error');
 
-    const japan = (data.countries||[]).find(r => r.dimensions?.country === 'Japan')?.metrics?.activeNgười dùngs || 0;
+    const japan = (data.countries||[]).find(r => r.dimensions?.country === 'Japan')?.metrics?.activeUsers || 0;
     document.getElementById('dau').textContent = data.dau || 0;
     document.getElementById('mau').textContent = data.mau || 0;
-    document.getElementById('newNgười dùngs').textContent = data.newNgười dùngs || 0;
-    document.getElementById('returningNgười dùngs').textContent = data.returningNgười dùngsEstimate || 0;
+    document.getElementById('newUsers').textContent = data.newUsers || 0;
+    document.getElementById('returningusers').textContent = data.returningusersEstimate || 0;
     document.getElementById('japan').textContent = japan;
 
     renderAutoSummary(data);
-    drawDailyChart(data.dailyNgười dùngs);
-    document.getElementById('countries').innerHTML = rows(data.countries,'country','activeNgười dùngs');
-    document.getElementById('languages').innerHTML = rows(data.languages,'language','activeNgười dùngs');
-    document.getElementById('versions').innerHTML = rows(data.versions,'appPhiên bản','activeNgười dùngs');
-    document.getElementById('devices').innerHTML = rows(data.devices,'deviceModel','activeNgười dùngs');
+    drawDailyChart(data.dailyUsers);
+    document.getElementById('countries').innerHTML = rows(data.countries,'country','activeUsers');
+    document.getElementById('languages').innerHTML = rows(data.languages,'language','activeUsers');
+    document.getElementById('versions').innerHTML = rows(data.versions,'appPhiên bản','activeUsers');
+    document.getElementById('devices').innerHTML = rows(data.devices,'deviceModel','activeUsers');
     document.getElementById('events').innerHTML = rows(data.events,'eventName','eventCount','event');
     document.getElementById('screens').innerHTML = rows(data.screens,'unifiedMàn hìnhName','screenPageViews','screen');
 
@@ -371,33 +371,33 @@ app.get('/api/summary', async (req, res) => {
     const requestedDays = Number(req.query.days || 30);
     const days = [7, 30, 90].includes(requestedDays) ? requestedDays : 30;
     const startDate = days + 'daysAgo';
-    const [dau, mau, countries, events, devices, versions, languages, screens, dailyNgười dùngs, newNgười dùngs] = await Promise.all([
-      safeReport({ startDate:'today', metrics:['activeNgười dùngs'] }),
-      safeReport({ startDate:'30daysAgo', metrics:['activeNgười dùngs'] }),
-      safeReport({ startDate, dimensions:['country'], metrics:['activeNgười dùngs'], limit:10 }),
+    const [dau, mau, countries, events, devices, versions, languages, screens, dailyUsers, newUsers] = await Promise.all([
+      safeReport({ startDate:'today', metrics:['activeUsers'] }),
+      safeReport({ startDate:'30daysAgo', metrics:['activeUsers'] }),
+      safeReport({ startDate, dimensions:['country'], metrics:['activeUsers'], limit:10 }),
       safeReport({ startDate, dimensions:['eventName'], metrics:['eventCount'], limit:40 }),
-      safeReport({ startDate, dimensions:['deviceModel'], metrics:['activeNgười dùngs'], limit:10 }),
-      safeReport({ startDate, dimensions:['appPhiên bản'], metrics:['activeNgười dùngs'], limit:10 }),
-      safeReport({ startDate, dimensions:['language'], metrics:['activeNgười dùngs'], limit:10 }),
+      safeReport({ startDate, dimensions:['deviceModel'], metrics:['activeUsers'], limit:10 }),
+      safeReport({ startDate, dimensions:['appPhiên bản'], metrics:['activeUsers'], limit:10 }),
+      safeReport({ startDate, dimensions:['language'], metrics:['activeUsers'], limit:10 }),
       safeReport({ startDate, dimensions:['unifiedMàn hìnhName'], metrics:['screenPageViews'], limit:20 }),
-      safeReport({ startDate, dimensions:['date'], metrics:['activeNgười dùngs','newNgười dùngs','sessions'], limit:120 }),
-      safeReport({ startDate, metrics:['newNgười dùngs'] })
+      safeReport({ startDate, dimensions:['date'], metrics:['activeUsers','newUsers','sessions'], limit:120 }),
+      safeReport({ startDate, metrics:['newUsers'] })
     ]);
 
     res.json({
       ok: true,
       days,
-      dau: dau[0]?.metrics?.activeNgười dùngs || 0,
-      mau: mau[0]?.metrics?.activeNgười dùngs || 0,
-      newNgười dùngs: newNgười dùngs[0]?.metrics?.newNgười dùngs || 0,
-      returningNgười dùngsEstimate: Math.max((mau[0]?.metrics?.activeNgười dùngs || 0) - (newNgười dùngs[0]?.metrics?.newNgười dùngs || 0), 0),
+      dau: dau[0]?.metrics?.activeUsers || 0,
+      mau: mau[0]?.metrics?.activeUsers || 0,
+      newUsers: newUsers[0]?.metrics?.newUsers || 0,
+      returningusersEstimate: Math.max((mau[0]?.metrics?.activeUsers || 0) - (newUsers[0]?.metrics?.newUsers || 0), 0),
       countries,
       events,
       devices,
       versions,
       languages,
       screens,
-      dailyNgười dùngs,
+      dailyUsers,
       updatedAt: new Date().toISOString()
     });
   } catch (e) {
