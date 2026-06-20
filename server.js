@@ -407,7 +407,8 @@ async function loadData(days=30){
 
     status.textContent = 'Đã cập nhật dữ liệu '+days+' ngày: ' + new Date(data.updatedAt).toLocaleString();
   }catch(e){
-    status.textContent = 'Lỗi: ' + e.message;
+    console.error(e);
+    status.textContent = 'Lỗi tải dữ liệu: ' + (e && e.stack ? e.stack : e.message);
   }
 }
 loadData(30);
