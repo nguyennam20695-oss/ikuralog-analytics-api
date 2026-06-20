@@ -113,7 +113,7 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
 <header>
   <div>
     <h1>IkuraLog Analytics</h1>
-    <div class="sub">Bảng theo dõi tăng trưởng và hành vi người dùng thật</div>
+    <div class="sub">Bảng theo dõi tình hình sử dụng IkuraLog</div>
     <div id="status" class="status">Đang tải dữ liệu GA4...</div>
   </div>
   <div class="filters">
@@ -142,24 +142,24 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
   <div class="grid">
     <div class="card"><div class="label">Người dùng hôm nay</div><div class="num" id="dau">-</div></div>
     <div class="card"><div class="label">Người dùng 30 ngày</div><div class="num" id="mau">-</div></div>
-    <div class="card"><div class="label">Người dùng mới</div><div class="num" id="newUsers">-</div></div>
-    <div class="card"><div class="label">Quay lại ước tính</div><div class="num" id="returningUsers">-</div></div>
-    <div class="card"><div class="label">User ở Nhật</div><div class="num" id="japan">-</div></div>
+    <div class="card"><div class="label">Người dùng mới</div><div class="num" id="newNgười dùngs">-</div></div>
+    <div class="card"><div class="label">Người dùng quay lại</div><div class="num" id="returningNgười dùngs">-</div></div>
+    <div class="card"><div class="label">Người dùng tại Nhật</div><div class="num" id="japan">-</div></div>
   </div>
 
   <section class="card" style="margin-top:18px">
-    <h2>Xu hướng người dùng theo ngày</h2>
+    <h2>Xu hướng người dùng từng ngày</h2>
     <div id="dailyChart" class="chartBox"></div>
     <div id="growthInsight" class="insight">Đang phân tích xu hướng...</div>
   </section>
 
   <div class="section">
-    <div class="card"><h2>Quốc gia</h2><table><thead><tr><th>Quốc gia</th><th>User</th><th>Tỷ lệ</th></tr></thead><tbody id="countries"></tbody></table></div>
-    <div class="card"><h2>Ngôn ngữ</h2><table><thead><tr><th>Ngôn ngữ</th><th>User</th><th>Tỷ lệ</th></tr></thead><tbody id="languages"></tbody></table></div>
-    <div class="card"><h2>Phiên bản app</h2><table><thead><tr><th>Phiên bản</th><th>User</th><th>Tỷ lệ</th></tr></thead><tbody id="versions"></tbody></table></div>
-    <div class="card"><h2>Thiết bị</h2><table><thead><tr><th>Thiết bị</th><th>User</th><th>Tỷ lệ</th></tr></thead><tbody id="devices"></tbody></table></div>
-    <div class="card"><h2>Sự kiện quan trọng</h2><table><thead><tr><th>Sự kiện</th><th>Số lần</th><th>Tỷ lệ</th></tr></thead><tbody id="events"></tbody></table></div>
-    <div class="card"><h2>Màn hình được mở nhiều</h2><table><thead><tr><th>Màn hình</th><th>Lượt mở</th><th>Tỷ lệ</th></tr></thead><tbody id="screens"></tbody></table><div class="note">Nếu còn “Không xác định”, nghĩa là app chưa gửi tên màn hình đủ rõ. Cần user dùng bản mới có screen tracking.</div></div>
+    <div class="card"><h2>Quốc gia</h2><table><thead><tr><th>Quốc gia</th><th>Người dùng</th><th>Mức độ</th></tr></thead><tbody id="countries"></tbody></table></div>
+    <div class="card"><h2>Ngôn ngữ</h2><table><thead><tr><th>Ngôn ngữ</th><th>Người dùng</th><th>Mức độ</th></tr></thead><tbody id="languages"></tbody></table></div>
+    <div class="card"><h2>Phiên bản ứng dụng</h2><table><thead><tr><th>Phiên bản</th><th>Người dùng</th><th>Mức độ</th></tr></thead><tbody id="versions"></tbody></table></div>
+    <div class="card"><h2>Thiết bị</h2><table><thead><tr><th>Thiết bị</th><th>Người dùng</th><th>Mức độ</th></tr></thead><tbody id="devices"></tbody></table></div>
+    <div class="card"><h2>Hoạt động quan trọng</h2><table><thead><tr><th>Sự kiện</th><th>Số lần</th><th>Mức độ</th></tr></thead><tbody id="events"></tbody></table></div>
+    <div class="card"><h2>Màn hình người dùng hay mở</h2><table><thead><tr><th>Màn hình</th><th>Lượt mở</th><th>Mức độ</th></tr></thead><tbody id="screens"></tbody></table><div class="note">Nếu còn “Không xác định”, nghĩa là app chưa gửi tên màn hình đủ rõ. Cần user dùng bản mới có theo dõi màn hình.</div></div>
   </div>
 </main>
 <script>
@@ -172,9 +172,9 @@ const eventNames = {
   main_shell_opened:'Mở khung chính',
   session_start:'Bắt đầu phiên',
   shift_created:'Tạo ca làm',
-  first_open:'Cài đặt / mở lần đầu',
+  mở ứng dụng lần đầu:'Mở ứng dụng lần đầu',
   onboarding_completed:'Hoàn thành giới thiệu',
-  job_created:'Tạo công việc',
+  job_created:'Tạo nơi làm việc',
   app_update:'Cập nhật ứng dụng',
   app_open_custom:'Mở app',
   app_remove:'Gỡ ứng dụng',
@@ -192,13 +192,13 @@ const screenNames = {
 };
 
 function cleanName(v){
-  if(!v || v === '(not set)') return 'Không xác định';
+  if(!v || v === '(not set)') return 'Chưa có dữ liệu';
   return v;
 }
 function displayName(v, type){
   v = cleanName(v);
   if(type === 'event') return eventNames[v] || v;
-  if(type === 'screen') return screenNames[v] || v;
+  if(type === 'screen') return (v === 'Chưa có dữ liệu' ? 'Chưa có dữ liệu màn hình' : (screenNames[v] || v));
   return v;
 }
 function maxMetric(rows, metric){ return Math.max(...(rows||[]).map(r => r.metrics?.[metric] || 0), 1); }
@@ -219,14 +219,14 @@ function dateLabel(v){
 function drawDailyChart(rows){
   const box = document.getElementById('dailyChart');
   rows = (rows||[]).filter(r=>r.dimensions?.date).sort((a,b)=>String(a.dimensions.date).localeCompare(String(b.dimensions.date)));
-  const values = rows.map(r=>r.metrics?.activeUsers||0);
+  const values = rows.map(r=>r.metrics?.activeNgười dùngs||0);
   const max = Math.max(...values, 1);
   const w = 1100, h = 250, pad = 34;
   const step = rows.length > 1 ? (w-pad*2)/(rows.length-1) : 0;
   const points = rows.map((r,i)=>{
     const x = pad + i*step;
-    const y = h - pad - ((r.metrics?.activeUsers||0)/max)*(h-pad*2);
-    return {x,y,v:r.metrics?.activeUsers||0,date:dateLabel(r.dimensions.date)};
+    const y = h - pad - ((r.metrics?.activeNgười dùngs||0)/max)*(h-pad*2);
+    return {x,y,v:r.metrics?.activeNgười dùngs||0,date:dateLabel(r.dimensions.date)};
   });
   const line = points.map(p=>p.x+','+p.y).join(' ');
   const area = points.length ? pad+','+(h-pad)+' '+line+' '+(w-pad)+','+(h-pad) : '';
@@ -245,19 +245,19 @@ function drawDailyChart(rows){
   const diff = last - first;
   const insight = document.getElementById('growthInsight');
   if(values.length < 2) insight.textContent = 'Chưa đủ dữ liệu để nhận định xu hướng.';
-  else if(diff > 0) insight.innerHTML = '<span class="good">Tín hiệu tốt:</span> user cuối kỳ cao hơn đầu kỳ +' + diff + '.';
-  else if(diff < 0) insight.innerHTML = '<span class="bad">Cần chú ý:</span> user cuối kỳ thấp hơn đầu kỳ ' + diff + '. Cần kiểm tra onboarding, update app và nguồn tải.';
-  else insight.innerHTML = '<span class="warn">Đi ngang:</span> user chưa tăng rõ. Cần thêm kênh kéo người dùng mới.';
+  else if(diff > 0) insight.innerHTML = '<span class="good">Tín hiệu tốt:</span> người dùng cuối kỳ cao hơn đầu kỳ +' + diff + '.';
+  else if(diff < 0) insight.innerHTML = '<span class="bad">Cần chú ý:</span> người dùng cuối kỳ thấp hơn đầu kỳ ' + diff + '. Cần kiểm tra phần giới thiệu ban đầu, bản cập nhật và nguồn tải.';
+  else insight.innerHTML = '<span class="warn">Chưa tăng rõ:</span> user chưa tăng rõ. Cần thêm cách kéo người dùng mới.';
 }
-function metricByEvent(data, eventName){
+function metricByHoạt động(data, eventName){
   return (data.events||[]).find(r => r.dimensions?.eventName === eventName)?.metrics?.eventCount || 0;
 }
-function activeByVersion(data, version){
-  return (data.versions||[]).find(r => r.dimensions?.appVersion === version)?.metrics?.activeUsers || 0;
+function activeByPhiên bản(data, version){
+  return (data.versions||[]).find(r => r.dimensions?.appPhiên bản === version)?.metrics?.activeNgười dùngs || 0;
 }
-function latestVersion(data){
+function latestPhiên bản(data){
   const versions = (data.versions||[])
-    .map(r => r.dimensions?.appVersion)
+    .map(r => r.dimensions?.appPhiên bản)
     .filter(Boolean)
     .sort((a,b)=>b.localeCompare(a, undefined, {numeric:true}));
   return versions[0] || '';
@@ -268,61 +268,61 @@ function pct(a,b){
 }
 function renderAutoSummary(data){
   const mau = data.mau || 0;
-  const newUsers = data.newUsers || 0;
-  const returning = data.returningUsersEstimate || 0;
+  const newNgười dùngs = data.newNgười dùngs || 0;
+  const returning = data.returningNgười dùngsEstimate || 0;
   const returnRate = pct(returning, mau);
 
-  const japan = (data.countries||[]).find(r => r.dimensions?.country === 'Japan')?.metrics?.activeUsers || 0;
+  const japan = (data.countries||[]).find(r => r.dimensions?.country === 'Japan')?.metrics?.activeNgười dùngs || 0;
   const japanRate = pct(japan, mau);
 
-  const firstOpen = metricByEvent(data, 'first_open');
-  const onboarding = metricByEvent(data, 'onboarding_completed');
-  const jobCreated = metricByEvent(data, 'job_created');
-  const shiftCreated = metricByEvent(data, 'shift_created');
+  const firstOpen = metricByHoạt động(data, 'mở ứng dụng lần đầu');
+  const onboarding = metricByHoạt động(data, 'onboarding_completed');
+  const jobCreated = metricByHoạt động(data, 'job_created');
+  const shiftCreated = metricByHoạt động(data, 'shift_created');
 
   const onboardingRate = pct(onboarding, firstOpen);
   const jobRate = pct(jobCreated, firstOpen);
   const shiftRate = pct(shiftCreated, firstOpen);
 
-  const latest = latestVersion(data);
-  const latestUsers = activeByVersion(data, latest);
-  const latestRate = pct(latestUsers, mau);
+  const latest = latestPhiên bản(data);
+  const latestNgười dùngs = activeByPhiên bản(data, latest);
+  const latestRate = pct(latestNgười dùngs, mau);
 
-  const unknownScreens = (data.screens||[])
-    .filter(r => !r.dimensions?.unifiedScreenName || r.dimensions?.unifiedScreenName === '(not set)')
+  const unknownMàn hìnhs = (data.screens||[])
+    .filter(r => !r.dimensions?.unifiedMàn hìnhName || r.dimensions?.unifiedMàn hìnhName === '(not set)')
     .reduce((sum,r)=>sum+(r.metrics?.screenPageViews||0),0);
-  const totalScreens = (data.screens||[]).reduce((sum,r)=>sum+(r.metrics?.screenPageViews||0),0);
-  const unknownScreenRate = pct(unknownScreens, totalScreens);
+  const totalMàn hìnhs = (data.screens||[]).reduce((sum,r)=>sum+(r.metrics?.screenPageViews||0),0);
+  const unknownMàn hìnhRate = pct(unknownMàn hìnhs, totalMàn hìnhs);
 
   const health =
     returnRate >= 20 ? ['good','Ổn'] :
     returnRate >= 10 ? ['warn','Cần theo dõi'] :
-    ['bad','Giữ chân yếu'];
+    ['bad','Người dùng quay lại thấp'];
 
   document.getElementById('autoSummary').innerHTML = [
-    '<div class="summaryLine"><span class="tag '+health[0]+'">'+health[1]+'</span> Tỷ lệ quay lại: <b>'+returnRate+'%</b></div>',
-    '<div class="summaryLine">User mới: <b>'+newUsers+'</b> / MAU <b>'+mau+'</b></div>',
-    '<div class="summaryLine">User Nhật: <b>'+japan+'</b> ('+japanRate+'%)</div>',
-    '<div class="summaryLine">Onboarding: <b>'+onboarding+'</b> / first_open <b>'+firstOpen+'</b> ('+onboardingRate+'%)</div>',
-    '<div class="summaryLine">Tạo công việc: <b>'+jobCreated+'</b> ('+jobRate+'% so với first_open)</div>',
-    '<div class="summaryLine">Tạo ca làm: <b>'+shiftCreated+'</b> ('+shiftRate+'% so với first_open)</div>',
-    '<div class="summaryLine">Bản mới nhất '+latest+': <b>'+latestUsers+'</b> user ('+latestRate+'%)</div>'
+    '<div class="summaryLine"><span class="tag '+health[0]+'">'+health[1]+'</span> Tỷ lệ người dùng quay lại: <b>'+returnRate+'%</b></div>',
+    '<div class="summaryLine">Người dùng mới: <b>'+newNgười dùngs+'</b> / người dùng 30 ngày <b>'+mau+'</b></div>',
+    '<div class="summaryLine">Người dùng tại Nhật: <b>'+japan+'</b> ('+japanRate+'%)</div>',
+    '<div class="summaryLine">Giới thiệu ban đầu: <b>'+onboarding+'</b> / mở ứng dụng lần đầu <b>'+firstOpen+'</b> ('+onboardingRate+'%)</div>',
+    '<div class="summaryLine">Tạo nơi làm việc: <b>'+jobCreated+'</b> ('+jobRate+'% so với mở ứng dụng lần đầu)</div>',
+    '<div class="summaryLine">Tạo ca làm: <b>'+shiftCreated+'</b> ('+shiftRate+'% so với mở ứng dụng lần đầu)</div>',
+    '<div class="summaryLine">Bản mới nhất '+latest+': <b>'+latestNgười dùngs+'</b> user ('+latestRate+'%)</div>'
   ].join('');
 
   const warnings = [];
-  if(returnRate < 10) warnings.push('<div class="summaryLine"><span class="tag bad">Cao</span> User quay lại thấp. Cần cải thiện onboarding và lý do quay lại app.</div>');
-  if(unknownScreenRate > 50) warnings.push('<div class="summaryLine"><span class="tag bad">Cao</span> Screen tracking chưa rõ: '+unknownScreenRate+'% lượt màn hình không xác định.</div>');
-  if(latestRate < 50) warnings.push('<div class="summaryLine"><span class="tag warn">Vừa</span> Dưới 50% user đang ở bản mới nhất. Cần thúc đẩy update.</div>');
-  if(japanRate >= 60) warnings.push('<div class="summaryLine"><span class="tag good">Tốt</span> Nhật đang là thị trường chính, đúng hướng IkuraLog.</div>');
-  if(firstOpen > 0 && onboardingRate < 70) warnings.push('<div class="summaryLine"><span class="tag warn">Vừa</span> Onboarding chưa đủ mạnh: '+onboardingRate+'%.</div>');
+  if(returnRate < 10) warnings.push('<div class="summaryLine"><span class="tag bad">Cao</span> Người dùng quay lại thấp. Cần cải thiện onboarding và lý do quay lại app.</div>');
+  if(unknownMàn hìnhRate > 50) warnings.push('<div class="summaryLine"><span class="tag bad">Cao</span> Màn hình tracking chưa rõ: '+unknownMàn hìnhRate+'% lượt mở màn hình chưa biết rõ tên.</div>');
+  if(latestRate < 50) warnings.push('<div class="summaryLine"><span class="tag warn">Vừa</span> Dưới 50% người dùng đang dùng bản mới nhất. Cần khuyến khích cập nhật.</div>');
+  if(japanRate >= 60) warnings.push('<div class="summaryLine"><span class="tag good">Tốt</span> Nhật Bản đang là thị trường chính, đúng hướng của IkuraLog.</div>');
+  if(firstOpen > 0 && onboardingRate < 70) warnings.push('<div class="summaryLine"><span class="tag warn">Vừa</span> Giới thiệu ban đầu chưa đủ mạnh: '+onboardingRate+'%.</div>');
   document.getElementById('autoWarnings').innerHTML = warnings.join('') || '<div class="summaryLine"><span class="tag good">OK</span> Chưa có cảnh báo lớn.</div>';
 
   const todos = [];
-  if(unknownScreenRate > 50) todos.push('Gắn logScreenView cho Trang chủ, Lịch làm, Công việc, Thống kê, Cài đặt.');
-  if(returnRate < 10) todos.push('Tạo lý do quay lại app: nhắc ca làm, thông báo lương tháng, widget thống kê nhanh.');
-  if(onboardingRate < 70) todos.push('Rút gọn onboarding và đẩy user tới bước tạo công việc đầu tiên.');
-  if(latestRate < 50) todos.push('Upload bản mới ổn định và theo dõi tỷ lệ cập nhật theo version.');
-  todos.push('Theo dõi lại funnel sau 3–7 ngày để tránh kết luận quá sớm.');
+  if(unknownMàn hìnhRate > 50) todos.push('Gắn logMàn hìnhView cho Trang chủ, Lịch làm, Công việc, Thống kê, Cài đặt.');
+  if(returnRate < 10) todos.push('Tạo lý do để người dùng mở lại app: nhắc ca làm, báo lương tháng, thẻ thống kê nhanh.');
+  if(onboardingRate < 70) todos.push('Rút gọn phần giới thiệu ban đầu và dẫn người dùng tới bước tạo nơi làm việc đầu tiên.');
+  if(latestRate < 50) todos.push('Đưa bản mới ổn định lên store và theo dõi tỷ lệ cập nhật theo phiên bản.');
+  todos.push('Theo dõi lại luồng sử dụng sau 3–7 ngày để tránh kết luận quá sớm.');
   document.getElementById('autoTodos').innerHTML = todos.map(t=>'<li>'+t+'</li>').join('');
 }
 
@@ -338,21 +338,21 @@ async function loadData(days=30){
     const data = await res.json();
     if(!data.ok) throw new Error(data.error || 'API error');
 
-    const japan = (data.countries||[]).find(r => r.dimensions?.country === 'Japan')?.metrics?.activeUsers || 0;
+    const japan = (data.countries||[]).find(r => r.dimensions?.country === 'Japan')?.metrics?.activeNgười dùngs || 0;
     document.getElementById('dau').textContent = data.dau || 0;
     document.getElementById('mau').textContent = data.mau || 0;
-    document.getElementById('newUsers').textContent = data.newUsers || 0;
-    document.getElementById('returningUsers').textContent = data.returningUsersEstimate || 0;
+    document.getElementById('newNgười dùngs').textContent = data.newNgười dùngs || 0;
+    document.getElementById('returningNgười dùngs').textContent = data.returningNgười dùngsEstimate || 0;
     document.getElementById('japan').textContent = japan;
 
     renderAutoSummary(data);
-    drawDailyChart(data.dailyUsers);
-    document.getElementById('countries').innerHTML = rows(data.countries,'country','activeUsers');
-    document.getElementById('languages').innerHTML = rows(data.languages,'language','activeUsers');
-    document.getElementById('versions').innerHTML = rows(data.versions,'appVersion','activeUsers');
-    document.getElementById('devices').innerHTML = rows(data.devices,'deviceModel','activeUsers');
+    drawDailyChart(data.dailyNgười dùngs);
+    document.getElementById('countries').innerHTML = rows(data.countries,'country','activeNgười dùngs');
+    document.getElementById('languages').innerHTML = rows(data.languages,'language','activeNgười dùngs');
+    document.getElementById('versions').innerHTML = rows(data.versions,'appPhiên bản','activeNgười dùngs');
+    document.getElementById('devices').innerHTML = rows(data.devices,'deviceModel','activeNgười dùngs');
     document.getElementById('events').innerHTML = rows(data.events,'eventName','eventCount','event');
-    document.getElementById('screens').innerHTML = rows(data.screens,'unifiedScreenName','screenPageViews','screen');
+    document.getElementById('screens').innerHTML = rows(data.screens,'unifiedMàn hìnhName','screenPageViews','screen');
 
     status.textContent = 'Đã cập nhật dữ liệu '+days+' ngày: ' + new Date(data.updatedAt).toLocaleString();
   }catch(e){
@@ -371,33 +371,33 @@ app.get('/api/summary', async (req, res) => {
     const requestedDays = Number(req.query.days || 30);
     const days = [7, 30, 90].includes(requestedDays) ? requestedDays : 30;
     const startDate = days + 'daysAgo';
-    const [dau, mau, countries, events, devices, versions, languages, screens, dailyUsers, newUsers] = await Promise.all([
-      safeReport({ startDate:'today', metrics:['activeUsers'] }),
-      safeReport({ startDate:'30daysAgo', metrics:['activeUsers'] }),
-      safeReport({ startDate, dimensions:['country'], metrics:['activeUsers'], limit:10 }),
+    const [dau, mau, countries, events, devices, versions, languages, screens, dailyNgười dùngs, newNgười dùngs] = await Promise.all([
+      safeReport({ startDate:'today', metrics:['activeNgười dùngs'] }),
+      safeReport({ startDate:'30daysAgo', metrics:['activeNgười dùngs'] }),
+      safeReport({ startDate, dimensions:['country'], metrics:['activeNgười dùngs'], limit:10 }),
       safeReport({ startDate, dimensions:['eventName'], metrics:['eventCount'], limit:40 }),
-      safeReport({ startDate, dimensions:['deviceModel'], metrics:['activeUsers'], limit:10 }),
-      safeReport({ startDate, dimensions:['appVersion'], metrics:['activeUsers'], limit:10 }),
-      safeReport({ startDate, dimensions:['language'], metrics:['activeUsers'], limit:10 }),
-      safeReport({ startDate, dimensions:['unifiedScreenName'], metrics:['screenPageViews'], limit:20 }),
-      safeReport({ startDate, dimensions:['date'], metrics:['activeUsers','newUsers','sessions'], limit:120 }),
-      safeReport({ startDate, metrics:['newUsers'] })
+      safeReport({ startDate, dimensions:['deviceModel'], metrics:['activeNgười dùngs'], limit:10 }),
+      safeReport({ startDate, dimensions:['appPhiên bản'], metrics:['activeNgười dùngs'], limit:10 }),
+      safeReport({ startDate, dimensions:['language'], metrics:['activeNgười dùngs'], limit:10 }),
+      safeReport({ startDate, dimensions:['unifiedMàn hìnhName'], metrics:['screenPageViews'], limit:20 }),
+      safeReport({ startDate, dimensions:['date'], metrics:['activeNgười dùngs','newNgười dùngs','sessions'], limit:120 }),
+      safeReport({ startDate, metrics:['newNgười dùngs'] })
     ]);
 
     res.json({
       ok: true,
       days,
-      dau: dau[0]?.metrics?.activeUsers || 0,
-      mau: mau[0]?.metrics?.activeUsers || 0,
-      newUsers: newUsers[0]?.metrics?.newUsers || 0,
-      returningUsersEstimate: Math.max((mau[0]?.metrics?.activeUsers || 0) - (newUsers[0]?.metrics?.newUsers || 0), 0),
+      dau: dau[0]?.metrics?.activeNgười dùngs || 0,
+      mau: mau[0]?.metrics?.activeNgười dùngs || 0,
+      newNgười dùngs: newNgười dùngs[0]?.metrics?.newNgười dùngs || 0,
+      returningNgười dùngsEstimate: Math.max((mau[0]?.metrics?.activeNgười dùngs || 0) - (newNgười dùngs[0]?.metrics?.newNgười dùngs || 0), 0),
       countries,
       events,
       devices,
       versions,
       languages,
       screens,
-      dailyUsers,
+      dailyNgười dùngs,
       updatedAt: new Date().toISOString()
     });
   } catch (e) {
