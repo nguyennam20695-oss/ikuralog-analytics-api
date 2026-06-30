@@ -150,7 +150,8 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
   <div>
     <h1>IkuraLog Analytics</h1>
     <div class="sub">Bảng theo dõi tình hình sử dụng IkuraLog</div>
-    <div id="status" class="status">Đang tải dữ liệu GA4...</div>
+    <div class="hint" style="margin-top:8px">Trang này chỉ giữ số quan trọng để quyết định: user, quay lại, bản app, hành động chính.</div>
+  <div id="status" class="status">Đang tải dữ liệu GA4...</div>
   </div>
   <div class="filters">
     <button id="btn7" class="secondary" onclick="loadData(7)">7 ngày</button>
@@ -178,17 +179,17 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
   <div class="grid">
     
         <div class="card">
-          <div class="label">Tổng lượt tải ước tính</div>
+          <div class="label">Đã mở app lần đầu</div>
           <div class="num" id="totalDownloads">-</div>
-          <div class="note">Tính theo số lần mở ứng dụng lần đầu</div>
+          <div class="note">Gần giống số lượt cài có mở app</div>
         </div>
 
 <div class="card"><div class="label">Người dùng hôm nay</div><div class="num" id="dau">-</div></div>
     <div class="card"><div class="label">Người dùng 7 ngày</div><div class="num" id="wau">-</div></div>
     <div class="card"><div class="label">Người dùng 30 ngày</div><div class="num" id="mau30">-</div></div>
-    <div class="card"><div class="label">Phiên / người</div><div class="num" id="sessionsPerUser">-</div></div>
-    <div class="card"><div class="label">Màn hình / người</div><div class="num" id="screensPerUser">-</div></div>
-    <div class="card"><div class="label">Người dùng trong khoảng chọn</div><div class="num" id="mau">-</div></div>
+    <div class="card"><div class="label">Số lần mở app / người</div><div class="num" id="sessionsPerUser">-</div></div>
+    <div class="card"><div class="label">Số màn hình / người</div><div class="num" id="screensPerUser">-</div></div>
+    <div class="card"><div class="label">Người dùng theo mốc đang chọn</div><div class="num" id="mau">-</div></div>
     <div class="card"><div class="label">Người dùng mới</div><div class="num" id="newUsers">-</div></div>
     <div class="card"><div class="label">Người dùng quay lại</div><div class="num" id="returningUsers">-</div></div>
     <div class="card"><div class="label">Người dùng tại Nhật</div><div class="num" id="japan">-</div></div>
@@ -201,12 +202,12 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
   </section>
 
   <div class="section">
-    <div class="card"><h2>Quốc gia</h2><table><thead><tr><th>Quốc gia</th><th>Người dùng</th><th>Mức độ</th></tr></thead><tbody id="countries"></tbody></table></div>
-    <div class="card"><h2>Ngôn ngữ</h2><table><thead><tr><th>Ngôn ngữ</th><th>Người dùng</th><th>Mức độ</th></tr></thead><tbody id="languages"></tbody></table></div>
-    <div class="card"><h2>Phiên bản ứng dụng</h2><table><thead><tr><th>Phiên bản</th><th>Người dùng</th><th>Mức độ</th></tr></thead><tbody id="versions"></tbody></table></div>
-    <div class="card"><h2>Thiết bị</h2><table><thead><tr><th>Thiết bị</th><th>Người dùng</th><th>Mức độ</th></tr></thead><tbody id="devices"></tbody></table></div>
-    <div class="card"><h2>Hoạt động quan trọng</h2><table><thead><tr><th>Sự kiện</th><th>Số lần</th><th>Mức độ</th></tr></thead><tbody id="events"></tbody></table></div>
-    <div class="card"><h2>Màn hình người dùng hay mở</h2><table><thead><tr><th>Màn hình</th><th>Lượt mở</th><th>Mức độ</th></tr></thead><tbody id="screens"></tbody></table><div class="note">Nếu còn “Không xác định”, nghĩa là app chưa gửi tên màn hình đủ rõ. Cần user dùng bản mới có theo dõi màn hình.</div></div>
+    <div class="card"><h2>Quốc gia</h2><table><thead><tr><th>Quốc gia</th><th>Người dùng</th><th>Tỷ lệ</th></tr></thead><tbody id="countries"></tbody></table></div>
+    <div class="card"><h2>Ngôn ngữ</h2><table><thead><tr><th>Ngôn ngữ</th><th>Người dùng</th><th>Tỷ lệ</th></tr></thead><tbody id="languages"></tbody></table></div>
+    <div class="card"><h2>Phiên bản ứng dụng</h2><table><thead><tr><th>Phiên bản</th><th>Người dùng</th><th>Tỷ lệ</th></tr></thead><tbody id="versions"></tbody></table></div>
+    <div class="card"><h2>Thiết bị</h2><table><thead><tr><th>Thiết bị</th><th>Người dùng</th><th>Tỷ lệ</th></tr></thead><tbody id="devices"></tbody></table></div>
+    <div class="card"><h2>Hành động chính</h2><table><thead><tr><th>Sự kiện</th><th>Số lần</th><th>Tỷ lệ</th></tr></thead><tbody id="events"></tbody></table></div>
+    <div class="card"><h2>Màn hình được dùng nhiều</h2><table><thead><tr><th>Màn hình</th><th>Lượt mở</th><th>Tỷ lệ</th></tr></thead><tbody id="screens"></tbody></table><div class="note">Nếu còn “Không xác định”, nghĩa là app chưa gửi tên màn hình đủ rõ. Cần user dùng bản mới có theo dõi màn hình.</div></div>
   </div>
 </main>
 <script>
@@ -253,7 +254,7 @@ function cleanName(v){
 function displayName(v, type){
   v = cleanName(v);
   if(type === 'event') return eventNames[v] || v;
-  if(type === 'screen') return (v === 'Chưa có dữ liệu' ? 'Chưa có dữ liệu màn hình' : (screenNames[v] || v));
+  if(type === 'screen') return (v === 'Chưa có dữ liệu' ? 'Chưa rõ tên màn hình' : (screenNames[v] || v));
   return v;
 }
 function maxMetric(rows, metric){ return Math.max(...(rows||[]).map(r => r.metrics?.[metric] || 0), 1); }
@@ -352,7 +353,7 @@ function renderAutoSummary(data){
   const health =
     returnRate >= 20 ? ['good','Ổn'] :
     returnRate >= 10 ? ['warn','Cần theo dõi'] :
-    ['bad','Người dùng quay lại thấp'];
+    ['bad','Ít người quay lại'];
 
   document.getElementById('autoSummary').innerHTML = [
     '<div class="summaryLine"><span class="tag '+health[0]+'">'+health[1]+'</span> Tỷ lệ người dùng quay lại: <b>'+returnRate+'%</b></div>',
@@ -365,11 +366,11 @@ function renderAutoSummary(data){
   ].join('');
 
   const warnings = [];
-  if(returnRate < 10) warnings.push('<div class="summaryLine"><span class="tag bad">Cao</span> Người dùng quay lại thấp. Cần cải thiện onboarding và lý do quay lại app.</div>');
+  if(returnRate < 10) warnings.push('<div class="summaryLine"><span class="tag bad">Cao</span> Ít người quay lại. Cần tạo lý do để người dùng mở lại app.</div>');
   if(unknownScreenRate > 50) warnings.push('<div class="summaryLine"><span class="tag bad">Cao</span> Theo dõi màn hình chưa rõ: '+unknownScreenRate+'% lượt mở màn hình chưa biết rõ tên.</div>');
-  if(latestRate < 50) warnings.push('<div class="summaryLine"><span class="tag warn">Vừa</span> Dưới 50% người dùng đang dùng bản mới nhất. Cần khuyến khích cập nhật.</div>');
+  if(latestRate < 50) warnings.push('<div class="summaryLine"><span class="tag warn">Vừa</span> Nhiều người chưa lên bản mới. Cần nhắc cập nhật.</div>');
   if(japanRate >= 60) warnings.push('<div class="summaryLine"><span class="tag good">Tốt</span> Nhật Bản đang là thị trường chính, đúng hướng của IkuraLog.</div>');
-  if(firstOpen > 0 && onboardingRate < 70) warnings.push('<div class="summaryLine"><span class="tag warn">Vừa</span> Giới thiệu ban đầu chưa đủ mạnh: '+onboardingRate+'%.</div>');
+  if(firstOpen > 0 && onboardingRate < 70) warnings.push('<div class="summaryLine"><span class="tag warn">Vừa</span> Màn giới thiệu chưa đủ tốt: '+onboardingRate+'%.</div>');
   document.getElementById('autoWarnings').innerHTML = warnings.join('') || '<div class="summaryLine"><span class="tag good">OK</span> Chưa có cảnh báo lớn.</div>';
 
   const todos = [];
@@ -379,6 +380,43 @@ function renderAutoSummary(data){
   if(latestRate < 50) todos.push('Đưa bản mới ổn định lên store và theo dõi tỷ lệ cập nhật theo phiên bản.');
   todos.push('Theo dõi lại luồng sử dụng sau 3–7 ngày để tránh kết luận quá sớm.');
   document.getElementById('autoTodos').innerHTML = todos.map(t=>'<li>'+t+'</li>').join('');
+}
+
+
+function hideLessImportantSections(){
+  const ids = ['devices','languages'];
+  ids.forEach(id=>{
+    const el = document.getElementById(id);
+    const box = el ? el.closest('section, .summaryBox, .stat-card, .card, .box, .panel, div') : null;
+    if(box && box !== document.body) box.style.display = 'none';
+  });
+
+  // Thu gọn bảng phiên bản: chỉ giữ vài dòng đầu
+  const versions = document.getElementById('versions');
+  if(versions){
+    [...versions.querySelectorAll('tr')].forEach((tr,i)=>{
+      if(i >= 5) tr.style.display = 'none';
+    });
+  }
+
+  // Thu gọn bảng hành động: chỉ giữ hành động quan trọng, bỏ event kỹ thuật
+  const events = document.getElementById('events');
+  if(events){
+    const keep = ['Xem màn hình','Tương tác người dùng','Mở Trang chủ','Mở Lịch làm','Mở Thống kê','Mở Nơi làm việc','Tạo ca làm','Mở ứng dụng lần đầu'];
+    [...events.querySelectorAll('tr')].forEach(tr=>{
+      const name = (tr.children[0]?.textContent || '').trim();
+      if(name && !keep.some(k=>name.includes(k))) tr.style.display = 'none';
+    });
+  }
+
+  // Ẩn dòng chưa rõ màn hình nếu còn quá nhiều dòng rác
+  const screens = document.getElementById('screens');
+  if(screens){
+    [...screens.querySelectorAll('tr')].forEach(tr=>{
+      const name = (tr.children[0]?.textContent || '').trim();
+      if(name === 'Chưa rõ tên màn hình' || name === 'Chưa có dữ liệu') tr.style.opacity = '0.45';
+    });
+  }
 }
 
 async function loadData(days=30){
@@ -408,6 +446,7 @@ async function loadData(days=30){
 
     renderAutoSummary(data);
     drawDailyChart(data.dailyUsers);
+    hideLessImportantSections();
     document.getElementById('countries').innerHTML = rows(data.countries,'country','activeUsers');
     document.getElementById('languages').innerHTML = rows(data.languages,'language','activeUsers');
     document.getElementById('versions').innerHTML = rows(data.versions,'appVersion','activeUsers');
