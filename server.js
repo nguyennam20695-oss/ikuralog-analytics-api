@@ -184,6 +184,10 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
         </div>
 
 <div class="card"><div class="label">Người dùng hôm nay</div><div class="num" id="dau">-</div></div>
+    <div class="card"><div class="label">Người dùng 7 ngày</div><div class="num" id="wau">-</div></div>
+    <div class="card"><div class="label">Người dùng 30 ngày</div><div class="num" id="mau30">-</div></div>
+    <div class="card"><div class="label">Phiên / người</div><div class="num" id="sessionsPerUser">-</div></div>
+    <div class="card"><div class="label">Màn hình / người</div><div class="num" id="screensPerUser">-</div></div>
     <div class="card"><div class="label">Người dùng trong khoảng chọn</div><div class="num" id="mau">-</div></div>
     <div class="card"><div class="label">Người dùng mới</div><div class="num" id="newUsers">-</div></div>
     <div class="card"><div class="label">Người dùng quay lại</div><div class="num" id="returningUsers">-</div></div>
@@ -397,6 +401,10 @@ async function loadData(days=30){
     setText('totalDownloads', firstOpenCount);
     setText('returningUsers', data.returningUsersEstimate || 0);
     setText('japan', japan);
+    setText('wau', data.wau || 0);
+    setText('mau30', data.mau30 || 0);
+    setText('sessionsPerUser', data.sessionsPerUser || 0);
+    setText('screensPerUser', data.screensPerUser || 0);
 
     renderAutoSummary(data);
     drawDailyChart(data.dailyUsers);
@@ -425,9 +433,13 @@ app.get('/api/summary', async (req, res) => {
     const requestedDays = Number(req.query.days || 30);
     const days = [7, 30, 90].includes(requestedDays) ? requestedDays : 30;
     const startDate = days + 'daysAgo';
-    const [dau, mau, countries, events, devices, versions, languages, screens, dailyUsers, newUsers] = await Promise.all([
+    const [dau, mau, wau, mau30, sessionsTotal, screenViewsTotal, countries, events, devices, versions, languages, screens, dailyUsers, newUsers] = await Promise.all([
       safeReport({ startDate:'today', metrics:['activeUsers'] }),
       safeReport({ startDate, metrics:['activeUsers'] }),
+      safeReport({ startDate:'7daysAgo', metrics:['activeUsers'] }),
+      safeReport({ startDate:'30daysAgo', metrics:['activeUsers'] }),
+      safeReport({ startDate, metrics:['sessions'] }),
+      safeReport({ startDate, metrics:['screenPageViews'] }),
       safeReport({ startDate, dimensions:['country'], metrics:['activeUsers'], limit:10 }),
       safeReport({ startDate, dimensions:['eventName'], metrics:['eventCount'], limit:40 }),
       safeReport({ startDate, dimensions:['deviceModel'], metrics:['activeUsers'], limit:10 }),
@@ -443,6 +455,10 @@ app.get('/api/summary', async (req, res) => {
       days,
       dau: dau[0]?.metrics?.activeUsers || 0,
       mau: mau[0]?.metrics?.activeUsers || 0,
+      wau: wau[0]?.metrics?.activeUsers || 0,
+      mau30: mau30[0]?.metrics?.activeUsers || 0,
+      sessionsPerUser: Number(((sessionsTotal[0]?.metrics?.sessions || 0) / Math.max(mau[0]?.metrics?.activeUsers || 0, 1)).toFixed(1)),
+      screensPerUser: Number(((screenViewsTotal[0]?.metrics?.screenPageViews || 0) / Math.max(mau[0]?.metrics?.activeUsers || 0, 1)).toFixed(1)),
       newUsers: newUsers[0]?.metrics?.newUsers || 0,
       returningUsersEstimate: Math.max((mau[0]?.metrics?.activeUsers || 0) - (newUsers[0]?.metrics?.newUsers || 0), 0),
       countries,
