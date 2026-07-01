@@ -179,20 +179,20 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
   <div class="grid">
     
         <div class="card">
-          <div class="label">Đã mở app lần đầu</div>
+          <div class="label">Người dùng mới</div>
           <div class="num" id="totalDownloads">-</div>
-          <div class="note">Gần giống số lượt cài có mở app</div>
+          <div class="note">Người mở app lần đầu</div>
         </div>
 
 <div class="card"><div class="label">Người dùng hôm nay</div><div class="num" id="dau">-</div></div>
     <div class="card"><div class="label">Người dùng 7 ngày</div><div class="num" id="wau">-</div></div>
     <div class="card"><div class="label">Người dùng 30 ngày</div><div class="num" id="mau30">-</div></div>
-    <div class="card"><div class="label">Số lần mở app / người</div><div class="num" id="sessionsPerUser">-</div></div>
-    <div class="card"><div class="label">Số màn hình / người</div><div class="num" id="screensPerUser">-</div></div>
-    <div class="card"><div class="label">Người dùng theo mốc đang chọn</div><div class="num" id="mau">-</div></div>
+    <div class="card"><div class="label">Mỗi người mở app</div><div class="num" id="sessionsPerUser">-</div><div class="hint">Trung bình số lần một người mở app</div></div>
+    <div class="card"><div class="label">Mỗi người xem màn hình</div><div class="num" id="screensPerUser">-</div><div class="hint">Trung bình số màn hình một người đã xem</div></div>
+    <div class="card"><div class="label">Người dùng hoạt động</div><div class="num" id="mau">-</div></div>
     <div class="card"><div class="label">Người dùng mới</div><div class="num" id="newUsers">-</div></div>
-    <div class="card"><div class="label">Người dùng quay lại</div><div class="num" id="returningUsers">-</div></div>
-    <div class="card"><div class="label">Người dùng tại Nhật</div><div class="num" id="japan">-</div></div>
+    <div class="card"><div class="label">Người quay lại</div><div class="num" id="returningUsers">-</div></div>
+    <div class="card"><div class="label">Người dùng ở Nhật</div><div class="num" id="japan">-</div></div>
   </div>
 
   <section class="card" style="margin-top:18px">
@@ -356,9 +356,9 @@ function renderAutoSummary(data){
     ['bad','Ít người quay lại'];
 
   document.getElementById('autoSummary').innerHTML = [
-    '<div class="summaryLine"><span class="tag '+health[0]+'">'+health[1]+'</span> Tỷ lệ người dùng quay lại: <b>'+returnRate+'%</b></div>',
-    '<div class="summaryLine">Người dùng mới: <b>'+newUsers+'</b> / người dùng trong khoảng chọn <b>'+mau+'</b></div>',
-    '<div class="summaryLine">Người dùng tại Nhật: <b>'+japan+'</b> ('+japanRate+'%)</div>',
+    '<div class="summaryLine"><span class="tag '+health[0]+'">'+health[1]+'</span> Tỷ lệ quay lại: <b>'+returnRate+'%</b></div>',
+    '<div class="summaryLine">Người dùng mới: <b>'+newUsers+'</b> / tổng người dùng hoạt động <b>'+mau+'</b></div>',
+    '<div class="summaryLine">Người dùng ở Nhật: <b>'+japan+'</b> ('+japanRate+'%)</div>',
     '<div class="summaryLine">Giới thiệu ban đầu: <b>'+onboarding+'</b> / mở ứng dụng lần đầu <b>'+firstOpen+'</b> ('+onboardingRate+'%)</div>',
     '<div class="summaryLine">Số lần tạo nơi làm việc: <b>'+jobCreated+'</b></div>',
     '<div class="summaryLine">Số lần tạo ca làm: <b>'+shiftCreated+'</b></div>',
@@ -419,8 +419,30 @@ function hideLessImportantSections(){
   }
 }
 
+
+function updatePeriodLabels(days){
+  const activeLabel = document.querySelector('#mau')?.closest('.card')?.querySelector('.label');
+  if(activeLabel) activeLabel.textContent = 'Người dùng hoạt động ' + days + ' ngày';
+
+  const newLabel = document.querySelector('#newUsers')?.closest('.card')?.querySelector('.label');
+  if(newLabel) newLabel.textContent = 'Người dùng mới ' + days + ' ngày';
+
+  const returningLabel = document.querySelector('#returningUsers')?.closest('.card')?.querySelector('.label');
+  if(returningLabel) returningLabel.textContent = 'Người quay lại ' + days + ' ngày';
+
+  const totalBox = document.querySelector('#totalDownloads')?.closest('.card');
+  if(totalBox) totalBox.style.display = 'none';
+
+  const wauBox = document.querySelector('#wau')?.closest('.card');
+  if(wauBox) wauBox.style.display = days === 30 ? '' : 'none';
+
+  const mau30Box = document.querySelector('#mau30')?.closest('.card');
+  if(mau30Box) mau30Box.style.display = days === 7 ? '' : 'none';
+}
+
 async function loadData(days=30){
   currentDays = days;
+  updatePeriodLabels(days);
   document.querySelectorAll('.filters .secondary').forEach(b=>b.classList.remove('active'));
   const btn = document.getElementById('btn'+days); if(btn) btn.classList.add('active');
 
