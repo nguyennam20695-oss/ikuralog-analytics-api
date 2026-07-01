@@ -456,10 +456,7 @@ async function loadData(days=30){
     const japan = (data.countries||[]).find(r => r.dimensions?.country === 'Japan')?.metrics?.activeUsers || 0;
     setText('dau', data.dau || 0);
     setText('mau', data.mau || 0);
-    setText('newUsers', data.newUsers || 0);
-    const firstOpenCount = (data.events||[]).find(r => r.dimensions?.eventName === 'first_open')?.metrics?.eventCount || 0;
-    setText('totalDownloads', firstOpenCount);
-    setText('returningUsers', data.returningUsersEstimate || 0);
+    setText('newUsers', data.newUsers || 0);    setText('returningUsers', data.returningUsersEstimate || 0);
     setText('japan', japan);
     setText('wau', data.wau || 0);
     setText('mau30', data.mau30 || 0);
