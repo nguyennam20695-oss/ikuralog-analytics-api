@@ -220,7 +220,6 @@ function setText(id, value){
 const eventNames = {
   user_engagement:'Tương tác người dùng',
   screen_view:'Xem màn hình',
-  app_open_test:'Mở app bản test',
   main_shell_opened:'Mở khung chính',
   session_start:'Bắt đầu phiên',
   first_open:'Mở ứng dụng lần đầu',
