@@ -184,13 +184,13 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
       <div class="num" id="appHealthScore">-</div>
       <div class="hint" id="appHealthText">Đang đánh giá...</div>
     </div>
-    <div class="card"><div class="label">Người dùng hôm nay</div><div class="num" id="dau">-</div></div>
-    <div class="card"><div class="label">Người dùng 7 ngày</div><div class="num" id="wau">-</div></div>
+    <div class="card"><div class="label">Hôm nay</div><div class="num" id="dau">-</div></div>
+    <div class="card"><div class="label">7 ngày</div><div class="num" id="wau">-</div></div>
     <div class="card"><div class="label">Người dùng 30 ngày</div><div class="num" id="mau30">-</div></div>
     <div class="card"><div class="label">Người dùng hoạt động</div><div class="num" id="mau">-</div></div>
     <div class="card"><div class="label">Người dùng mới</div><div class="num" id="newUsers">-</div></div>
     <div class="card"><div class="label">Người quay lại</div><div class="num" id="returningUsers">-</div></div>
-    <div class="card"><div class="label">Người dùng ở Nhật</div><div class="num" id="japan">-</div></div>
+    <div class="card"><div class="label">Ở Nhật</div><div class="num" id="japan">-</div></div>
   </div>
 
   <section class="card" style="margin-top:18px">
@@ -202,7 +202,7 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
   <div class="section">
     <div class="card"><h2>Quốc gia</h2><table><thead><tr><th>Quốc gia</th><th>Người dùng</th><th>Tỷ lệ</th></tr></thead><tbody id="countries"></tbody></table></div>
     <div class="card"><h2>Ngôn ngữ</h2><table><thead><tr><th>Ngôn ngữ</th><th>Người dùng</th><th>Tỷ lệ</th></tr></thead><tbody id="languages"></tbody></table></div>
-    <div class="card"><h2>Phiên bản ứng dụng</h2><table><thead><tr><th>Phiên bản</th><th>Người dùng</th><th>Tỷ lệ</th></tr></thead><tbody id="versions"></tbody></table></div>
+    <div class="card"><h2>Phiên bản app</h2><table><thead><tr><th>Phiên bản</th><th>Người dùng</th><th>Tỷ lệ</th></tr></thead><tbody id="versions"></tbody></table></div>
     <div class="card"><h2>Thiết bị</h2><table><thead><tr><th>Thiết bị</th><th>Người dùng</th><th>Tỷ lệ</th></tr></thead><tbody id="devices"></tbody></table></div>
     <div class="card"><h2>Hành động chính</h2><table><thead><tr><th>Sự kiện</th><th>Số lần</th><th>Tỷ lệ</th></tr></thead><tbody id="events"></tbody></table></div>
     <div class="card"><h2>Màn hình được dùng nhiều</h2><table><thead><tr><th>Màn hình</th><th>Lượt mở</th><th>Tỷ lệ</th></tr></thead><tbody id="screens"></tbody></table><div class="note">Nếu còn “Không xác định”, nghĩa là app chưa gửi tên màn hình đủ rõ. Cần user dùng bản mới có theo dõi màn hình.</div></div>
@@ -300,7 +300,7 @@ function drawDailyChart(rows){
   const insight = document.getElementById('growthInsight');
   if(values.length < 2) insight.textContent = 'Chưa đủ dữ liệu để nhận định xu hướng.';
   else if(diff > 0) insight.innerHTML = '<span class="good">Tín hiệu tốt:</span> người dùng cuối kỳ cao hơn đầu kỳ +' + diff + '.';
-  else if(diff < 0) insight.innerHTML = '<span class="bad">Cần chú ý:</span> hôm nay thấp hơn đầu kỳ ' + diff + '. Nếu xu hướng này tiếp tục, nên kiểm tra nguồn tải, bản cập nhật và màn giới thiệu ban đầu.';
+  else if(diff < 0) insight.innerHTML = '<span class="bad">Cần chú ý:</span> hôm nay thấp hơn đầu kỳ ' + diff + '. Nếu vài ngày tới vẫn giảm, cần kiểm tra nguồn tải, bản cập nhật và màn giới thiệu ban đầu.';
   else insight.innerHTML = '<span class="warn">Chưa tăng rõ:</span> người dùng chưa tăng rõ. Cần thêm cách kéo người dùng mới.';
 }
 function metricByEvent(data, eventName){
@@ -356,7 +356,7 @@ function renderAutoSummary(data){
   document.getElementById('autoSummary').innerHTML = [
     '<div class="summaryLine"><span class="tag '+health[0]+'">'+health[1]+'</span> Tỷ lệ quay lại: <b>'+returnRate+'%</b></div>',
     '<div class="summaryLine">Người dùng mới: <b>'+newUsers+'</b> / tổng người dùng hoạt động <b>'+mau+'</b></div>',
-    '<div class="summaryLine">Người dùng ở Nhật: <b>'+japan+'</b> ('+japanRate+'%)</div>',
+    '<div class="summaryLine">Ở Nhật: <b>'+japan+'</b> ('+japanRate+'%)</div>',
     '<div class="summaryLine">Giới thiệu ban đầu: <b>'+onboarding+'</b> / mở ứng dụng lần đầu <b>'+firstOpen+'</b> ('+onboardingRate+'%)</div>',
     '<div class="summaryLine">Số lần tạo nơi làm việc: <b>'+jobCreated+'</b></div>',
     '<div class="summaryLine">Số lần tạo ca làm: <b>'+shiftCreated+'</b></div>',
@@ -461,9 +461,19 @@ function setAppHealthScore(data){
   const textEl = document.getElementById('appHealthText');
   if(scoreEl) scoreEl.textContent = score + '/100';
   if(textEl){
-    if(score >= 80) textEl.textContent = 'Tốt: app đang có tín hiệu ổn.';
-    else if(score >= 60) textEl.textContent = 'Tạm ổn: cần cải thiện người quay lại.';
-    else textEl.textContent = 'Cần chú ý: user quay lại hoặc cập nhật còn yếu.';
+    const notes = [];
+    if(dau >= 5) notes.push('User hôm nay ổn');
+    else notes.push('User hôm nay thấp');
+
+    if(returnRate >= 20) notes.push('quay lại tốt');
+    else notes.push('quay lại thấp');
+
+    if(latestRate >= 50) notes.push('bản mới ổn');
+    else notes.push('nhiều người chưa cập nhật');
+
+    if(score >= 80) textEl.textContent = 'Tốt: ' + notes.join(', ') + '.';
+    else if(score >= 60) textEl.textContent = 'Tạm ổn: ' + notes.join(', ') + '.';
+    else textEl.textContent = 'Cần chú ý: ' + notes.join(', ') + '.';
   }
 }
 
@@ -514,6 +524,31 @@ function cleanOwnerTables(){
   }
 }
 
+
+function limitOwnerTables(){
+  const versions = document.getElementById('versions');
+  if(versions){
+    [...versions.querySelectorAll('tr')].forEach((tr,i)=>{
+      if(i >= 5) tr.remove();
+    });
+  }
+
+  const countries = document.getElementById('countries');
+  if(countries){
+    [...countries.querySelectorAll('tr')].forEach((tr,i)=>{
+      if(i >= 5) tr.remove();
+    });
+  }
+
+  const events = document.getElementById('events');
+  if(events){
+    [...events.querySelectorAll('tr')].forEach(tr=>{
+      const name = (tr.children[0]?.textContent || '').trim();
+      if(name.includes('bản test')) tr.remove();
+    });
+  }
+}
+
 async function loadData(days=30){
   currentDays = days;
   updatePeriodLabels(days);
@@ -548,6 +583,7 @@ async function loadData(days=30){
     document.getElementById('events').innerHTML = rows(data.events,'eventName','eventCount','event');
     document.getElementById('screens').innerHTML = rows(data.screens,'unifiedScreenName','screenPageViews','screen');
     cleanOwnerTables();
+    limitOwnerTables();
 
     status.textContent = 'Đã cập nhật dữ liệu '+days+' ngày: ' + new Date(data.updatedAt).toLocaleString();
   }catch(e){
