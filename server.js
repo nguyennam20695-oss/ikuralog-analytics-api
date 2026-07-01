@@ -177,12 +177,6 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
   </section>
 
   <div class="grid">
-    
-        <div class="card">
-          <div class="label">Người dùng mới</div>
-          <div class="num" id="totalDownloads">-</div>
-          <div class="note">Người mở app lần đầu</div>
-        </div>
 
 <div class="card"><div class="label">Người dùng hôm nay</div><div class="num" id="dau">-</div></div>
     <div class="card"><div class="label">Người dùng 7 ngày</div><div class="num" id="wau">-</div></div>
