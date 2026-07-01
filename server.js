@@ -149,7 +149,11 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
 <header>
   <div>
     <h1>IkuraLog Analytics</h1>
-    <div class="sub">Bảng theo dõi tình hình sử dụng IkuraLog</div>
+    <div class="sub">Số liệu đo được từ Google Analytics + phân tích nội bộ</div>
+  <div class="hint" style="margin-top:8px">
+Các ô người dùng, quốc gia, phiên bản, màn hình và hành động là dữ liệu đo được từ Google Analytics. 
+Các mục đánh giá, cảnh báo và gợi ý là phân tích nội bộ của IkuraLog.
+</div>
     <div class="hint" style="margin-top:8px">Trang này chỉ giữ số quan trọng để quyết định: user, quay lại, bản app, hành động chính.</div>
   <div id="status" class="status">Đang tải dữ liệu GA4...</div>
   </div>
@@ -163,15 +167,15 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
 <main>
   <section class="summaryGrid">
     <div class="summaryBox">
-      <div class="summaryTitle">Tổng quan vận hành</div>
+      <div class="summaryTitle">Phân tích nội bộ của IkuraLog</div>
       <div id="autoSummary">Đang phân tích dữ liệu...</div>
     </div>
     <div class="summaryBox">
-      <div class="summaryTitle">Cảnh báo</div>
+      <div class="summaryTitle">Cảnh báo tự động</div>
       <div id="autoWarnings">Đang kiểm tra...</div>
     </div>
     <div class="summaryBox">
-      <div class="summaryTitle">Việc nên làm tiếp</div>
+      <div class="summaryTitle">Gợi ý nên làm tiếp</div>
       <ul id="autoTodos" class="todo"></ul>
     </div>
   </section>
@@ -180,9 +184,9 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
 
 
     <div class="card">
-      <div class="label">Sức khỏe ứng dụng</div>
+      <div class="label">Đánh giá tổng quan</div>
       <div class="num" id="appHealthScore">-</div>
-      <div class="hint" id="appHealthText">Đang đánh giá...</div>
+      <div class="hint" id="appHealthText">Phân tích nội bộ, không phải chỉ số chính thức của Google</div>
     </div>
     <div class="card"><div class="label">Hôm nay</div><div class="num" id="dau">-</div></div>
     <div class="card"><div class="label">7 ngày</div><div class="num" id="wau">-</div></div>
