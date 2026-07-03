@@ -75,14 +75,20 @@ async function getTotalDownloads() {
 }
 
 
-async function report({ startDate='30daysAgo', endDate='today', dimensions=[], metrics=[], limit=20 }) {
-  const [res] = await client.runReport({
+async function report({ startDate='30daysAgo', endDate='today', dimensions=[], metrics=[], limit=20, dimensionFilter=null }) {
+  const request = {
     property: `properties/${propertyId}`,
     dateRanges: [{ startDate, endDate }],
     dimensions: dimensions.map(name => ({ name })),
     metrics: metrics.map(name => ({ name })),
     limit
-  });
+  };
+
+  if (dimensionFilter) {
+    request.dimensionFilter = dimensionFilter;
+  }
+
+  const [res] = await client.runReport(request);
 
   return (res.rows || []).map(row => ({
     dimensions: Object.fromEntries((row.dimensionValues || []).map((v, i) => [dimensions[i], v.value])),
@@ -848,7 +854,21 @@ app.get('/api/summary', async (req, res) => {
       safeReport({ startDate, metrics:['newUsers'] }),
       safeReport({ startDate:'today', dimensions:['unifiedScreenName'], metrics:['screenPageViews','activeUsers'], limit:50 }),
       safeReport({ startDate, dimensions:['unifiedScreenName'], metrics:['screenPageViews','activeUsers'], limit:50 }),
-      safeReport({ startDate:'28daysAgo', dimensions:['date','eventName'], metrics:['eventCount','activeUsers'], limit:500 })
+      safeReport({
+        startDate:'28daysAgo',
+        dimensions:['date','eventName'],
+        metrics:['eventCount','activeUsers'],
+        limit:500,
+        dimensionFilter: {
+          filter: {
+            fieldName: 'eventName',
+            stringFilter: {
+              matchType: 'CONTAINS',
+              value: 'tab_opened'
+            }
+          }
+        }
+      })
     ]);
 
     res.json({
