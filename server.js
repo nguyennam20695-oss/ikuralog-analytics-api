@@ -143,7 +143,17 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
 .tag.good{background:#dcfce7;color:#166534}.tag.warn{background:#fef3c7;color:#92400e}.tag.bad{background:#fee2e2;color:#991b1b}
 .todo{margin:0;padding-left:18px}.todo li{margin:8px 0;font-weight:750}
 @media(max-width:950px){.grid,.section,.summaryGrid{grid-template-columns:1fr}header{display:block}.filters{margin-top:12px}}
-</style>
+
+    .tabUsageGrid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
+    .miniTitle{font-size:16px;font-weight:900;color:#111827;margin:8px 0 10px}
+    .usageTable{width:100%;border-collapse:collapse;font-size:14px}
+    .usageTable th,.usageTable td{padding:10px 8px;border-bottom:1px solid #e5e7eb;text-align:left}
+    .usageTable th{font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:.04em}
+    .usageTable td.num{text-align:right;font-weight:800;color:#111827}
+    .usageHint{font-size:13px;color:#64748b;line-height:1.45;margin-top:8px}
+    .weekBadge{display:inline-block;background:#eef2ff;color:#1e3a8a;border-radius:999px;padding:4px 9px;font-size:12px;font-weight:800}
+
+  </style>
 </head>
 <body>
 <header>
@@ -197,7 +207,32 @@ Các mục đánh giá, cảnh báo và gợi ý là phân tích nội bộ củ
     <div class="card"><div class="label">Ở Nhật</div><div class="num" id="japan">-</div></div>
   </div>
 
-  <section class="card" style="margin-top:18px">
+  
+      <section class="card">
+        <div class="summaryTitle">Hành vi mở tab / màn hình</div>
+        <div class="usageHint">
+          Dùng để biết người dùng thực sự vào app để làm gì. Nên nhìn cả <b>user riêng biệt</b> và <b>lượt mở</b>, không chỉ nhìn lượt thô.
+        </div>
+
+        <div class="tabUsageGrid">
+          <div>
+            <div class="miniTitle">Hôm nay</div>
+            <div id="tabUsageToday">Đang tải...</div>
+          </div>
+
+          <div>
+            <div class="miniTitle">Khoảng đang chọn</div>
+            <div id="tabUsageRange">Đang tải...</div>
+          </div>
+
+          <div>
+            <div class="miniTitle">Theo tuần gần đây</div>
+            <div id="tabUsageWeekly">Đang tải...</div>
+          </div>
+        </div>
+      </section>
+
+<section class="card" style="margin-top:18px">
     <h2>Người dùng hoạt động mỗi ngày</h2>
     <div id="dailyChart" class="chartBox"></div>
     <div id="growthInsight" class="insight">Đang phân tích xu hướng...</div>
@@ -259,6 +294,129 @@ function displayName(v, type){
   return v;
 }
 function maxMetric(rows, metric){ return Math.max(...(rows||[]).map(r => r.metrics?.[metric] || 0), 1); }
+
+function normalizeTabName(name) {
+  const raw = String(name || '').trim();
+  if (!raw) return 'Không rõ';
+
+  const lower = raw.toLowerCase();
+
+  const pairs = [
+    ['home', 'Trang chủ'],
+    ['main', 'Trang chủ'],
+    ['dashboard', 'Trang chủ'],
+    ['shift', 'Ca làm / Nhập giờ'],
+    ['shifts', 'Ca làm / Nhập giờ'],
+    ['work', 'Ca làm / Nhập giờ'],
+    ['job', 'Công việc'],
+    ['jobs', 'Công việc'],
+    ['salary', 'Lương tháng'],
+    ['wage', 'Lương tháng'],
+    ['income', 'Lương tháng'],
+    ['history', 'Lịch sử'],
+    ['record', 'Lịch sử'],
+    ['stat', 'Thống kê'],
+    ['chart', 'Thống kê'],
+    ['setting', 'Cài đặt'],
+    ['settings', 'Cài đặt'],
+    ['notification', 'Thông báo'],
+  ];
+
+  for (const [key, label] of pairs) {
+    if (lower.includes(key)) return label;
+  }
+
+  return raw
+    .replace(/^screen[_\- ]*/i, '')
+    .replace(/[_\-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim() || raw;
+}
+
+function toNumberMetric(row, key) {
+  return Number(row?.metrics?.[key] || 0);
+}
+
+function buildTabUsage(rows) {
+  const map = new Map();
+
+  for (const row of rows || []) {
+    const screen = row?.dimensions?.unifiedScreenName || row?.dimensions?.screenName || row?.dimensions?.firebaseScreen || '';
+    const label = normalizeTabName(screen);
+    const current = map.get(label) || {
+      tab: label,
+      views: 0,
+      users: 0,
+      avgPerUser: 0,
+      rawScreens: new Set(),
+    };
+
+    current.views += toNumberMetric(row, 'screenPageViews');
+    current.users += toNumberMetric(row, 'activeUsers');
+    if (screen) current.rawScreens.add(String(screen));
+    map.set(label, current);
+  }
+
+  return [...map.values()]
+    .map(x => ({
+      tab: x.tab,
+      views: x.views,
+      users: x.users,
+      avgPerUser: Number((x.views / Math.max(x.users, 1)).toFixed(1)),
+      rawScreens: [...x.rawScreens].slice(0, 8),
+    }))
+    .sort((a, b) => b.users - a.users || b.views - a.views)
+    .slice(0, 20);
+}
+
+function weekKeyFromDate(yyyymmdd) {
+  const text = String(yyyymmdd || '');
+  if (!/^\d{8}$/.test(text)) return 'Không rõ tuần';
+  const y = Number(text.slice(0, 4));
+  const m = Number(text.slice(4, 6)) - 1;
+  const d = Number(text.slice(6, 8));
+  const date = new Date(Date.UTC(y, m, d));
+  const day = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  return `${date.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+}
+
+function buildWeeklyTabUsage(rows) {
+  const map = new Map();
+
+  for (const row of rows || []) {
+    const date = row?.dimensions?.date || '';
+    const screen = row?.dimensions?.unifiedScreenName || row?.dimensions?.screenName || row?.dimensions?.firebaseScreen || '';
+    const week = weekKeyFromDate(date);
+    const tab = normalizeTabName(screen);
+    const key = `${week}|||${tab}`;
+
+    const current = map.get(key) || {
+      week,
+      tab,
+      views: 0,
+      users: 0,
+      avgPerUser: 0,
+    };
+
+    current.views += toNumberMetric(row, 'screenPageViews');
+    current.users += toNumberMetric(row, 'activeUsers');
+    map.set(key, current);
+  }
+
+  const rowsOut = [...map.values()].map(x => ({
+    ...x,
+    avgPerUser: Number((x.views / Math.max(x.users, 1)).toFixed(1)),
+  }));
+
+  return rowsOut
+    .sort((a, b) => String(b.week).localeCompare(String(a.week)) || b.users - a.users || b.views - a.views)
+    .slice(0, 80);
+}
+
+
 function rows(data, dim, metric, type=''){
   const max = maxMetric(data, metric);
   return (data||[]).map(r => {
@@ -552,6 +710,47 @@ function limitOwnerTables(){
   }
 }
 
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function renderUsageTable(items, weekly=false) {
+      if (!items || !items.length) {
+        return '<div class="usageHint">Chưa có dữ liệu. Nếu app mới ghi analytics, GA có thể cần vài giờ đến 24 giờ để hiện đủ.</div>';
+      }
+
+      const head = weekly
+        ? '<tr><th>Tuần</th><th>Tab / màn hình</th><th>User</th><th>Lượt</th><th>TB/user</th></tr>'
+        : '<tr><th>Tab / màn hình</th><th>User</th><th>Lượt</th><th>TB/user</th></tr>';
+
+      const body = items.map(x => {
+        if (weekly) {
+          return `<tr>
+            <td><span class="weekBadge">${escapeHtml(x.week || '')}</span></td>
+            <td>${escapeHtml(x.tab || '')}</td>
+            <td class="num">${Number(x.users || 0).toLocaleString()}</td>
+            <td class="num">${Number(x.views || 0).toLocaleString()}</td>
+            <td class="num">${Number(x.avgPerUser || 0).toLocaleString()}</td>
+          </tr>`;
+        }
+
+        return `<tr>
+          <td>${escapeHtml(x.tab || '')}</td>
+          <td class="num">${Number(x.users || 0).toLocaleString()}</td>
+          <td class="num">${Number(x.views || 0).toLocaleString()}</td>
+          <td class="num">${Number(x.avgPerUser || 0).toLocaleString()}</td>
+        </tr>`;
+      }).join('');
+
+      return `<table class="usageTable">${head}${body}</table>`;
+    }
+
 async function loadData(days=30){
   currentDays = days;
   updatePeriodLabels(days);
@@ -585,6 +784,11 @@ async function loadData(days=30){
     document.getElementById('devices').innerHTML = rows(data.devices,'deviceModel','activeUsers');
     document.getElementById('events').innerHTML = rows(data.events,'eventName','eventCount','event');
     document.getElementById('screens').innerHTML = rows(data.screens,'unifiedScreenName','screenPageViews','screen');
+
+    if (document.getElementById('tabUsageToday')) document.getElementById('tabUsageToday').innerHTML = renderUsageTable(data.tabUsageToday || []);
+    if (document.getElementById('tabUsageRange')) document.getElementById('tabUsageRange').innerHTML = renderUsageTable(data.tabUsageRange || []);
+    if (document.getElementById('tabUsageWeekly')) document.getElementById('tabUsageWeekly').innerHTML = renderUsageTable(data.tabUsageWeekly || [], true);
+
     cleanOwnerTables();
     limitOwnerTables();
 
@@ -606,7 +810,7 @@ app.get('/api/summary', async (req, res) => {
     const requestedDays = Number(req.query.days || 30);
     const days = [7, 30, 90].includes(requestedDays) ? requestedDays : 30;
     const startDate = days + 'daysAgo';
-    const [dau, mau, wau, mau30, sessionsTotal, screenViewsTotal, countries, events, devices, versions, languages, screens, dailyUsers, newUsers] = await Promise.all([
+    const [dau, mau, wau, mau30, sessionsTotal, screenViewsTotal, countries, events, devices, versions, languages, screens, dailyUsers, newUsers, tabUsageTodayRaw, tabUsageRangeRaw, tabUsageDailyRaw] = await Promise.all([
       safeReport({ startDate:'today', metrics:['activeUsers'] }),
       safeReport({ startDate, metrics:['activeUsers'] }),
       safeReport({ startDate:'7daysAgo', metrics:['activeUsers'] }),
@@ -620,6 +824,9 @@ app.get('/api/summary', async (req, res) => {
       safeReport({ startDate, dimensions:['language'], metrics:['activeUsers'], limit:10 }),
       safeReport({ startDate, dimensions:['unifiedScreenName'], metrics:['screenPageViews'], limit:20 }),
       safeReport({ startDate, dimensions:['date'], metrics:['activeUsers','newUsers','sessions'], limit:120 }),
+      safeReport({ startDate, dimensions:['unifiedScreenName'], metrics:['screenPageViews','activeUsers'], limit:50 }),
+      safeReport({ startDate, dimensions:['unifiedScreenName'], metrics:['screenPageViews','activeUsers'], limit:50 }),
+      safeReport({ startDate:'28daysAgo', dimensions:['date','unifiedScreenName'], metrics:['screenPageViews','activeUsers'], limit:500 }),
       safeReport({ startDate, metrics:['newUsers'] })
     ]);
 
@@ -634,6 +841,9 @@ app.get('/api/summary', async (req, res) => {
       screensPerUser: Number(((screenViewsTotal[0]?.metrics?.screenPageViews || 0) / Math.max(mau[0]?.metrics?.activeUsers || 0, 1)).toFixed(1)),
       newUsers: newUsers[0]?.metrics?.newUsers || 0,
       returningUsersEstimate: Math.max((mau[0]?.metrics?.activeUsers || 0) - (newUsers[0]?.metrics?.newUsers || 0), 0),
+      tabUsageToday: buildTabUsage(tabUsageTodayRaw),
+      tabUsageRange: buildTabUsage(tabUsageRangeRaw),
+      tabUsageWeekly: buildWeeklyTabUsage(tabUsageDailyRaw),
       countries,
       events,
       devices,
