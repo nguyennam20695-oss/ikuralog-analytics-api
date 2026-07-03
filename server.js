@@ -729,27 +729,28 @@ function limitOwnerTables(){
         ? '<tr><th>Tuần</th><th>Tab / màn hình</th><th>User</th><th>Lượt</th><th>TB/user</th></tr>'
         : '<tr><th>Tab / màn hình</th><th>User</th><th>Lượt</th><th>TB/user</th></tr>';
 
-      const body = items.map(x => {
+      const body = items.map(function(x) {
         if (weekly) {
-          return `<tr>
-            <td><span class="weekBadge">${escapeHtml(x.week || '')}</span></td>
-            <td>${escapeHtml(x.tab || '')}</td>
-            <td class="num">${Number(x.users || 0).toLocaleString()}</td>
-            <td class="num">${Number(x.views || 0).toLocaleString()}</td>
-            <td class="num">${Number(x.avgPerUser || 0).toLocaleString()}</td>
-          </tr>`;
+          return '<tr>' +
+            '<td><span class="weekBadge">' + escapeHtml(x.week || '') + '</span></td>' +
+            '<td>' + escapeHtml(x.tab || '') + '</td>' +
+            '<td class="num">' + Number(x.users || 0).toLocaleString() + '</td>' +
+            '<td class="num">' + Number(x.views || 0).toLocaleString() + '</td>' +
+            '<td class="num">' + Number(x.avgPerUser || 0).toLocaleString() + '</td>' +
+          '</tr>';
         }
 
-        return `<tr>
-          <td>${escapeHtml(x.tab || '')}</td>
-          <td class="num">${Number(x.users || 0).toLocaleString()}</td>
-          <td class="num">${Number(x.views || 0).toLocaleString()}</td>
-          <td class="num">${Number(x.avgPerUser || 0).toLocaleString()}</td>
-        </tr>`;
+        return '<tr>' +
+          '<td>' + escapeHtml(x.tab || '') + '</td>' +
+          '<td class="num">' + Number(x.users || 0).toLocaleString() + '</td>' +
+          '<td class="num">' + Number(x.views || 0).toLocaleString() + '</td>' +
+          '<td class="num">' + Number(x.avgPerUser || 0).toLocaleString() + '</td>' +
+        '</tr>';
       }).join('');
 
-      return `<table class="usageTable">${head}${body}</table>`;
+      return '<table class="usageTable">' + head + body + '</table>';
     }
+
 
 async function loadData(days=30){
   currentDays = days;
@@ -824,7 +825,7 @@ app.get('/api/summary', async (req, res) => {
       safeReport({ startDate, dimensions:['language'], metrics:['activeUsers'], limit:10 }),
       safeReport({ startDate, dimensions:['unifiedScreenName'], metrics:['screenPageViews'], limit:20 }),
       safeReport({ startDate, dimensions:['date'], metrics:['activeUsers','newUsers','sessions'], limit:120 }),
-      safeReport({ startDate, dimensions:['unifiedScreenName'], metrics:['screenPageViews','activeUsers'], limit:50 }),
+      safeReport({ startDate:'today', dimensions:['unifiedScreenName'], metrics:['screenPageViews','activeUsers'], limit:50 }),
       safeReport({ startDate, dimensions:['unifiedScreenName'], metrics:['screenPageViews','activeUsers'], limit:50 }),
       safeReport({ startDate:'28daysAgo', dimensions:['date','unifiedScreenName'], metrics:['screenPageViews','activeUsers'], limit:500 }),
       safeReport({ startDate, metrics:['newUsers'] })
