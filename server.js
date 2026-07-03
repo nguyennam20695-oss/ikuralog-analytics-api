@@ -110,6 +110,134 @@ app.get('/healthz', (req, res) => {
   res.json({ ok: true, status: 'healthy', service: 'ikuralog-analytics-api' });
 });
 
+
+function normalizeTabName(name) {
+  const raw = String(name || '').trim();
+  if (!raw) return 'Không rõ';
+
+  const lower = raw.toLowerCase();
+  const pairs = [
+    ['home', 'Trang chủ'],
+    ['main', 'Trang chủ'],
+    ['dashboard', 'Trang chủ'],
+    ['shift', 'Ca làm / Nhập giờ'],
+    ['shifts', 'Ca làm / Nhập giờ'],
+    ['work', 'Ca làm / Nhập giờ'],
+    ['job', 'Công việc'],
+    ['jobs', 'Công việc'],
+    ['salary', 'Lương tháng'],
+    ['wage', 'Lương tháng'],
+    ['income', 'Lương tháng'],
+    ['history', 'Lịch sử'],
+    ['record', 'Lịch sử'],
+    ['stat', 'Thống kê'],
+    ['chart', 'Thống kê'],
+    ['setting', 'Cài đặt'],
+    ['settings', 'Cài đặt'],
+    ['notification', 'Thông báo'],
+  ];
+
+  for (const pair of pairs) {
+    if (lower.includes(pair[0])) return pair[1];
+  }
+
+  return raw
+    .replace(/^screen[_\- ]*/i, '')
+    .replace(/[_\-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim() || raw;
+}
+
+function toNumberMetric(row, key) {
+  return Number(row && row.metrics && row.metrics[key] ? row.metrics[key] : 0);
+}
+
+function buildTabUsage(rows) {
+  const map = new Map();
+
+  for (const row of rows || []) {
+    const screen =
+      (row.dimensions && (row.dimensions.unifiedScreenName || row.dimensions.screenName || row.dimensions.firebaseScreen)) || '';
+    const label = normalizeTabName(screen);
+    const current = map.get(label) || {
+      tab: label,
+      views: 0,
+      users: 0,
+      avgPerUser: 0,
+    };
+
+    current.views += toNumberMetric(row, 'screenPageViews');
+    current.users += toNumberMetric(row, 'activeUsers');
+    map.set(label, current);
+  }
+
+  return Array.from(map.values())
+    .map(x => ({
+      tab: x.tab,
+      views: x.views,
+      users: x.users,
+      avgPerUser: Number((x.views / Math.max(x.users, 1)).toFixed(1)),
+    }))
+    .sort((a, b) => b.users - a.users || b.views - a.views)
+    .slice(0, 20);
+}
+
+function weekKeyFromDate(yyyymmdd) {
+  const text = String(yyyymmdd || '');
+  if (!/^\d{8}$/.test(text)) return 'Không rõ tuần';
+
+  const y = Number(text.slice(0, 4));
+  const m = Number(text.slice(4, 6)) - 1;
+  const d = Number(text.slice(6, 8));
+
+  const date = new Date(Date.UTC(y, m, d));
+  const day = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - day);
+
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+
+  return String(date.getUTCFullYear()) + '-W' + String(weekNo).padStart(2, '0');
+}
+
+function buildWeeklyTabUsage(rows) {
+  const map = new Map();
+
+  for (const row of rows || []) {
+    const date = row.dimensions && row.dimensions.date ? row.dimensions.date : '';
+    const screen =
+      (row.dimensions && (row.dimensions.unifiedScreenName || row.dimensions.screenName || row.dimensions.firebaseScreen)) || '';
+
+    const week = weekKeyFromDate(date);
+    const tab = normalizeTabName(screen);
+    const key = week + '|||' + tab;
+
+    const current = map.get(key) || {
+      week,
+      tab,
+      views: 0,
+      users: 0,
+      avgPerUser: 0,
+    };
+
+    current.views += toNumberMetric(row, 'screenPageViews');
+    current.users += toNumberMetric(row, 'activeUsers');
+    map.set(key, current);
+  }
+
+  return Array.from(map.values())
+    .map(x => ({
+      week: x.week,
+      tab: x.tab,
+      views: x.views,
+      users: x.users,
+      avgPerUser: Number((x.views / Math.max(x.users, 1)).toFixed(1)),
+    }))
+    .sort((a, b) => String(b.week).localeCompare(String(a.week)) || b.users - a.users || b.views - a.views)
+    .slice(0, 80);
+}
+
+
 app.get('/dashboard', requireDashboardAuth, (req, res) => {
   res.type('html').send(`<!doctype html>
 <html lang="vi">
@@ -294,129 +422,6 @@ function displayName(v, type){
   return v;
 }
 function maxMetric(rows, metric){ return Math.max(...(rows||[]).map(r => r.metrics?.[metric] || 0), 1); }
-
-function normalizeTabName(name) {
-  const raw = String(name || '').trim();
-  if (!raw) return 'Không rõ';
-
-  const lower = raw.toLowerCase();
-
-  const pairs = [
-    ['home', 'Trang chủ'],
-    ['main', 'Trang chủ'],
-    ['dashboard', 'Trang chủ'],
-    ['shift', 'Ca làm / Nhập giờ'],
-    ['shifts', 'Ca làm / Nhập giờ'],
-    ['work', 'Ca làm / Nhập giờ'],
-    ['job', 'Công việc'],
-    ['jobs', 'Công việc'],
-    ['salary', 'Lương tháng'],
-    ['wage', 'Lương tháng'],
-    ['income', 'Lương tháng'],
-    ['history', 'Lịch sử'],
-    ['record', 'Lịch sử'],
-    ['stat', 'Thống kê'],
-    ['chart', 'Thống kê'],
-    ['setting', 'Cài đặt'],
-    ['settings', 'Cài đặt'],
-    ['notification', 'Thông báo'],
-  ];
-
-  for (const [key, label] of pairs) {
-    if (lower.includes(key)) return label;
-  }
-
-  return raw
-    .replace(/^screen[_\- ]*/i, '')
-    .replace(/[_\-]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim() || raw;
-}
-
-function toNumberMetric(row, key) {
-  return Number(row?.metrics?.[key] || 0);
-}
-
-function buildTabUsage(rows) {
-  const map = new Map();
-
-  for (const row of rows || []) {
-    const screen = row?.dimensions?.unifiedScreenName || row?.dimensions?.screenName || row?.dimensions?.firebaseScreen || '';
-    const label = normalizeTabName(screen);
-    const current = map.get(label) || {
-      tab: label,
-      views: 0,
-      users: 0,
-      avgPerUser: 0,
-      rawScreens: new Set(),
-    };
-
-    current.views += toNumberMetric(row, 'screenPageViews');
-    current.users += toNumberMetric(row, 'activeUsers');
-    if (screen) current.rawScreens.add(String(screen));
-    map.set(label, current);
-  }
-
-  return [...map.values()]
-    .map(x => ({
-      tab: x.tab,
-      views: x.views,
-      users: x.users,
-      avgPerUser: Number((x.views / Math.max(x.users, 1)).toFixed(1)),
-      rawScreens: [...x.rawScreens].slice(0, 8),
-    }))
-    .sort((a, b) => b.users - a.users || b.views - a.views)
-    .slice(0, 20);
-}
-
-function weekKeyFromDate(yyyymmdd) {
-  const text = String(yyyymmdd || '');
-  if (!/^\d{8}$/.test(text)) return 'Không rõ tuần';
-  const y = Number(text.slice(0, 4));
-  const m = Number(text.slice(4, 6)) - 1;
-  const d = Number(text.slice(6, 8));
-  const date = new Date(Date.UTC(y, m, d));
-  const day = date.getUTCDay() || 7;
-  date.setUTCDate(date.getUTCDate() + 4 - day);
-  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-  const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-  return `${date.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
-}
-
-function buildWeeklyTabUsage(rows) {
-  const map = new Map();
-
-  for (const row of rows || []) {
-    const date = row?.dimensions?.date || '';
-    const screen = row?.dimensions?.unifiedScreenName || row?.dimensions?.screenName || row?.dimensions?.firebaseScreen || '';
-    const week = weekKeyFromDate(date);
-    const tab = normalizeTabName(screen);
-    const key = `${week}|||${tab}`;
-
-    const current = map.get(key) || {
-      week,
-      tab,
-      views: 0,
-      users: 0,
-      avgPerUser: 0,
-    };
-
-    current.views += toNumberMetric(row, 'screenPageViews');
-    current.users += toNumberMetric(row, 'activeUsers');
-    map.set(key, current);
-  }
-
-  const rowsOut = [...map.values()].map(x => ({
-    ...x,
-    avgPerUser: Number((x.views / Math.max(x.users, 1)).toFixed(1)),
-  }));
-
-  return rowsOut
-    .sort((a, b) => String(b.week).localeCompare(String(a.week)) || b.users - a.users || b.views - a.views)
-    .slice(0, 80);
-}
-
-
 function rows(data, dim, metric, type=''){
   const max = maxMetric(data, metric);
   return (data||[]).map(r => {
@@ -711,15 +716,6 @@ function limitOwnerTables(){
 }
 
 
-    function escapeHtml(value) {
-      return String(value ?? '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-    }
-
     function renderUsageTable(items, weekly=false) {
       if (!items || !items.length) {
         return '<div class="usageHint">Chưa có dữ liệu. Nếu app mới ghi analytics, GA có thể cần vài giờ đến 24 giờ để hiện đủ.</div>';
@@ -750,7 +746,6 @@ function limitOwnerTables(){
 
       return '<table class="usageTable">' + head + body + '</table>';
     }
-
 
 async function loadData(days=30){
   currentDays = days;
