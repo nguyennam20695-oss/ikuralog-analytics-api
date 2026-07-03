@@ -200,27 +200,41 @@ function weekKeyFromDate(yyyymmdd) {
   return String(date.getUTCFullYear()) + '-W' + String(weekNo).padStart(2, '0');
 }
 
+
+function tabNameFromEventName(eventName) {
+  const e = String(eventName || '').toLowerCase();
+
+  if (e === 'home_tab_opened') return 'Trang chủ';
+  if (e === 'shifts_tab_opened') return 'Lịch làm';
+  if (e === 'jobs_tab_opened') return 'Công việc';
+  if (e === 'stats_tab_opened') return 'Thống kê';
+  if (e === 'settings_tab_opened') return 'Cài đặt';
+
+  return '';
+}
+
 function buildWeeklyTabUsage(rows) {
   const map = new Map();
 
   for (const row of rows || []) {
-    const date = row.dimensions && row.dimensions.date ? row.dimensions.date : '';
-    const screen =
-      (row.dimensions && (row.dimensions.unifiedScreenName || row.dimensions.screenName || row.dimensions.firebaseScreen)) || '';
+    const date = row.dimensions && row.dimensions.date ? String(row.dimensions.date) : '';
+    const eventName = row.dimensions && row.dimensions.eventName ? String(row.dimensions.eventName) : '';
+    const tab = tabNameFromEventName(eventName);
 
-    const week = weekKeyFromDate(date);
-    const tab = normalizeTabName(screen);
-    const key = week + '|||' + tab;
+    if (!/^\d{8}$/.test(date) || !tab) continue;
+
+    const dayLabel = date.slice(0,4) + '/' + date.slice(4,6) + '/' + date.slice(6,8);
+    const key = date + '|||' + tab;
 
     const current = map.get(key) || {
-      week,
+      week: dayLabel,
       tab,
       views: 0,
       users: 0,
       avgPerUser: 0,
     };
 
-    current.views += toNumberMetric(row, 'screenPageViews');
+    current.views += toNumberMetric(row, 'eventCount');
     current.users += toNumberMetric(row, 'activeUsers');
     map.set(key, current);
   }
@@ -354,7 +368,7 @@ Các mục đánh giá, cảnh báo và gợi ý là phân tích nội bộ củ
           </div>
 
           <div>
-            <div class="miniTitle">Theo tuần gần đây</div>
+            <div class="miniTitle">Theo ngày gần đây</div>
             <div id="tabUsageWeekly">Đang tải...</div>
           </div>
         </div>
@@ -833,7 +847,7 @@ app.get('/api/summary', async (req, res) => {
       safeReport({ startDate, dimensions:['date'], metrics:['activeUsers','newUsers','sessions'], limit:120 }),
       safeReport({ startDate:'today', dimensions:['unifiedScreenName'], metrics:['screenPageViews','activeUsers'], limit:50 }),
       safeReport({ startDate, dimensions:['unifiedScreenName'], metrics:['screenPageViews','activeUsers'], limit:50 }),
-      safeReport({ startDate:'28daysAgo', dimensions:['date','unifiedScreenName'], metrics:['screenPageViews','activeUsers'], limit:500 }),
+      safeReport({ startDate:'28daysAgo', dimensions:['date','eventName'], metrics:['eventCount','activeUsers'], limit:500 }),
       safeReport({ startDate, metrics:['newUsers'] })
     ]);
 
