@@ -845,10 +845,10 @@ app.get('/api/summary', async (req, res) => {
       safeReport({ startDate, dimensions:['language'], metrics:['activeUsers'], limit:10 }),
       safeReport({ startDate, dimensions:['unifiedScreenName'], metrics:['screenPageViews'], limit:20 }),
       safeReport({ startDate, dimensions:['date'], metrics:['activeUsers','newUsers','sessions'], limit:120 }),
+      safeReport({ startDate, metrics:['newUsers'] }),
       safeReport({ startDate:'today', dimensions:['unifiedScreenName'], metrics:['screenPageViews','activeUsers'], limit:50 }),
       safeReport({ startDate, dimensions:['unifiedScreenName'], metrics:['screenPageViews','activeUsers'], limit:50 }),
-      safeReport({ startDate:'28daysAgo', dimensions:['date','eventName'], metrics:['eventCount','activeUsers'], limit:500 }),
-      safeReport({ startDate, metrics:['newUsers'] })
+      safeReport({ startDate:'28daysAgo', dimensions:['date','eventName'], metrics:['eventCount','activeUsers'], limit:500 })
     ]);
 
     res.json({
