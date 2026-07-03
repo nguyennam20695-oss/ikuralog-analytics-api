@@ -715,9 +715,12 @@ function limitOwnerTables(){
   }
 }
 
-
     function renderUsageTable(items, weekly=false) {
-      if (!items || !items.length) {
+      if (!Array.isArray(items)) {
+        items = [];
+      }
+
+      if (!items.length) {
         return '<div class="usageHint">Chưa có dữ liệu. Nếu app mới ghi analytics, GA có thể cần vài giờ đến 24 giờ để hiện đủ.</div>';
       }
 
@@ -725,27 +728,35 @@ function limitOwnerTables(){
         ? '<tr><th>Tuần</th><th>Tab / màn hình</th><th>User</th><th>Lượt</th><th>TB/user</th></tr>'
         : '<tr><th>Tab / màn hình</th><th>User</th><th>Lượt</th><th>TB/user</th></tr>';
 
-      const body = items.map(function(x) {
+      const body = items.map(function(item) {
+        const x = item || {};
+        const tab = escapeHtml(x.tab || 'Không rõ');
+        const week = escapeHtml(x.week || '');
+        const users = Number(x.users || 0).toLocaleString();
+        const views = Number(x.views || 0).toLocaleString();
+        const avg = Number(x.avgPerUser || 0).toLocaleString();
+
         if (weekly) {
           return '<tr>' +
-            '<td><span class="weekBadge">' + escapeHtml(x.week || '') + '</span></td>' +
-            '<td>' + escapeHtml(x.tab || '') + '</td>' +
-            '<td class="num">' + Number(x.users || 0).toLocaleString() + '</td>' +
-            '<td class="num">' + Number(x.views || 0).toLocaleString() + '</td>' +
-            '<td class="num">' + Number(x.avgPerUser || 0).toLocaleString() + '</td>' +
+            '<td><span class="weekBadge">' + week + '</span></td>' +
+            '<td>' + tab + '</td>' +
+            '<td class="num">' + users + '</td>' +
+            '<td class="num">' + views + '</td>' +
+            '<td class="num">' + avg + '</td>' +
           '</tr>';
         }
 
         return '<tr>' +
-          '<td>' + escapeHtml(x.tab || '') + '</td>' +
-          '<td class="num">' + Number(x.users || 0).toLocaleString() + '</td>' +
-          '<td class="num">' + Number(x.views || 0).toLocaleString() + '</td>' +
-          '<td class="num">' + Number(x.avgPerUser || 0).toLocaleString() + '</td>' +
+          '<td>' + tab + '</td>' +
+          '<td class="num">' + users + '</td>' +
+          '<td class="num">' + views + '</td>' +
+          '<td class="num">' + avg + '</td>' +
         '</tr>';
       }).join('');
 
       return '<table class="usageTable">' + head + body + '</table>';
     }
+
 
 async function loadData(days=30){
   currentDays = days;
