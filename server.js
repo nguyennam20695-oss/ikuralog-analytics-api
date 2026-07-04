@@ -297,7 +297,7 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
     .usageTable{width:100%;border-collapse:collapse;font-size:14px}
     .usageTable th,.usageTable td{padding:10px 8px;border-bottom:1px solid #e5e7eb;text-align:left}
     .usageTable th{font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:.04em}
-    .usageTable td.num{text-align:right;font-weight:800;color:#111827}
+    .usageTable td.num{text-align:right;font-weight:800;color:#111827;font-size:14px;margin-top:0}
     .usageHint{font-size:13px;color:#64748b;line-height:1.45;margin-top:8px}
     .weekBadge{display:inline-block;background:#eef2ff;color:#1e3a8a;border-radius:999px;padding:4px 9px;font-size:12px;font-weight:800}
 
