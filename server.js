@@ -56,7 +56,7 @@ app.get("/api/summary", async (req, res) => {
       report({ dimensions:[{name:"country"}], metrics:[{name:"activeUsers"}] }, "countries"),
       report({ dimensions:[{name:"language"}], metrics:[{name:"activeUsers"}] }, "languages"),
       report({ dimensions:[{name:"sessionSourceMedium"}], metrics:[{name:"sessions"},{name:"activeUsers"}] }, "sources"),
-      report({ dimensions:[{name:"landingPagePlusQueryString"}], metrics:[{name:"sessions"},{name:"activeUsers"}] }, "landing"),
+      report({ dimensions:[{name:"landingPagePlusQueryString"},{name:"hostName"}], metrics:[{name:"sessions"},{name:"activeUsers"}] }, "landing"),
       report({ dimensions:[{name:"date"}], metrics:[{name:"activeUsers"},{name:"newUsers"},{name:"sessions"}] }, "daily"),
       report({
         dimensions:[{name:"eventName"}],
@@ -114,7 +114,7 @@ app.get("/api/summary", async (req, res) => {
       countries: countriesRaw.map(r => rowObj(r, ["country"], ["activeUsers"])),
       languages: languagesRaw.map(r => rowObj(r, ["language"], ["activeUsers"])),
       sources: sourcesRaw.map(r => rowObj(r, ["sessionSourceMedium"], ["sessions","activeUsers"])),
-      landingPages: landingRaw.map(r => rowObj(r, ["landingPagePlusQueryString"], ["sessions","activeUsers"])),
+      landingPages: landingRaw.map(r => rowObj(r, ["landingPagePlusQueryString","hostName"], ["sessions","activeUsers"])),
 
       updatedAt: new Date().toISOString()
     });
