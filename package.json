@@ -1,8 +1,9 @@
 {
   "name": "ikuralog-analytics-server",
   "version": "1.0.0",
-  "type": "module",
-  "scripts": { "start": "node server.js" },
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
     "@google-analytics/data": "^5.2.0",
     "cors": "^2.8.5",
