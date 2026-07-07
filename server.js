@@ -9,6 +9,19 @@ app.use(express.static("../public"));
 const PROPERTY_ID = process.env.GA4_PROPERTY_ID;
 const credentialsJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
 
+if (credentialsJson) {
+  try {
+    const debugCreds = JSON.parse(credentialsJson);
+    console.log("GA4 credential client_email:", debugCreds.client_email);
+    console.log("GA4 credential private_key_id:", debugCreds.private_key_id);
+    console.log("GA4 private_key has header:", String(debugCreds.private_key || "").includes("BEGIN PRIVATE KEY"));
+  } catch (e) {
+    console.log("GA4 credential JSON parse failed:", e.message);
+  }
+} else {
+  console.log("GA4 credential JSON missing");
+}
+
 const client = credentialsJson
   ? new BetaAnalyticsDataClient({ credentials: JSON.parse(credentialsJson) })
   : new BetaAnalyticsDataClient();
