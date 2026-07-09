@@ -104,7 +104,6 @@ async function safeReport(args) {
 
 app.get('/', (req, res) => {
   res.json({
-    totalDownloads,
     ok: true,
     service: 'ikuralog-analytics-api',
     endpoints: ['/healthz', '/api/summary', '/dashboard'],
