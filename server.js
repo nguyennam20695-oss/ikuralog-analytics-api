@@ -653,7 +653,6 @@ function setAppHealthScore(data){
     if(dau >= 5) notes.push('User hôm nay ổn');
     else notes.push('User hôm nay thấp');
 
-    else notes.push('quay lại thấp');
 
     if(latestRate >= 50) notes.push('bản mới ổn');
     else notes.push('nhiều người chưa cập nhật');
