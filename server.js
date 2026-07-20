@@ -300,6 +300,28 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
     .usageHint{font-size:13px;color:#64748b;line-height:1.45;margin-top:8px}
     .weekBadge{display:inline-block;background:#eef2ff;color:#1e3a8a;border-radius:999px;padding:4px 9px;font-size:12px;font-weight:800}
 
+    .recentDaysScroll{
+      height:520px;
+      overflow-y:auto;
+      overflow-x:auto;
+      border:1px solid #e5e7eb;
+      border-radius:14px;
+      background:#fff;
+      scrollbar-gutter:stable;
+    }
+
+    .recentDaysScroll .usageTable{
+      min-width:680px;
+    }
+
+    .recentDaysScroll .usageTable th{
+      position:sticky;
+      top:0;
+      z-index:2;
+      background:#f8fafc;
+      box-shadow:0 1px 0 #e5e7eb;
+    }
+
   </style>
 </head>
 <body>
@@ -350,7 +372,6 @@ Các mục đánh giá, cảnh báo và gợi ý là phân tích nội bộ củ
     <div class="card"><div class="label">Người dùng 30 ngày</div><div class="num" id="mau30">-</div></div>
     <div class="card"><div class="label">Người dùng hoạt động</div><div class="num" id="mau">-</div></div>
     <div class="card"><div class="label">Người dùng mới</div><div class="num" id="newUsers">-</div></div>
-    <div class="card"><div class="label">Người quay lại</div><div class="num" id="returningUsers">-</div></div>
     <div class="card"><div class="label">Ở Nhật</div><div class="num" id="japan">-</div></div>
   </div>
 
@@ -374,7 +395,7 @@ Các mục đánh giá, cảnh báo và gợi ý là phân tích nội bộ củ
 
           <div>
             <div class="miniTitle">Theo ngày gần đây</div>
-            <div id="tabUsageWeekly">Đang tải...</div>
+            <div id="tabUsageWeekly" class="recentDaysScroll">Đang tải...</div>
           </div>
         </div>
       </section>
@@ -508,9 +529,6 @@ function pct(a,b){
 function renderAutoSummary(data){
   const mau = data.mau || 0;
   const newUsers = data.newUsers || 0;
-  const returning = data.returningUsersEstimate || 0;
-  const returnRate = pct(returning, mau);
-
   const japan = (data.countries||[]).find(r => r.dimensions?.country === 'Japan')?.metrics?.activeUsers || 0;
   const japanRate = pct(japan, mau);
 
@@ -533,13 +551,7 @@ function renderAutoSummary(data){
   const totalScreens = (data.screens||[]).reduce((sum,r)=>sum+(r.metrics?.screenPageViews||0),0);
   const unknownScreenRate = pct(unknownScreens, totalScreens);
 
-  const health =
-    returnRate >= 20 ? ['good','Ổn'] :
-    returnRate >= 10 ? ['warn','Cần theo dõi'] :
-    ['bad','Ít người quay lại'];
-
   document.getElementById('autoSummary').innerHTML = [
-    '<div class="summaryLine"><span class="tag '+health[0]+'">'+health[1]+'</span> Tỷ lệ quay lại: <b>'+returnRate+'%</b></div>',
     '<div class="summaryLine">Người dùng mới: <b>'+newUsers+'</b> / tổng người dùng hoạt động <b>'+mau+'</b></div>',
     '<div class="summaryLine">Ở Nhật: <b>'+japan+'</b> ('+japanRate+'%)</div>',
     '<div class="summaryLine">Giới thiệu ban đầu: <b>'+onboarding+'</b> / mở ứng dụng lần đầu <b>'+firstOpen+'</b> ('+onboardingRate+'%)</div>',
@@ -549,7 +561,6 @@ function renderAutoSummary(data){
   ].join('');
 
   const warnings = [];
-  if(returnRate < 10) warnings.push('<div class="summaryLine"><span class="tag bad">Cao</span> Ít người quay lại. Cần tạo lý do để người dùng mở lại app.</div>');
   if(unknownScreenRate > 50) warnings.push('<div class="summaryLine"><span class="tag bad">Cao</span> Theo dõi màn hình chưa rõ: '+unknownScreenRate+'% lượt mở màn hình chưa biết rõ tên.</div>');
   if(latestRate < 50) warnings.push('<div class="summaryLine"><span class="tag warn">Vừa</span> Nhiều người chưa lên bản mới. Cần nhắc cập nhật.</div>');
   if(japanRate >= 60) warnings.push('<div class="summaryLine"><span class="tag good">Tốt</span> Nhật Bản đang là thị trường chính, đúng hướng của IkuraLog.</div>');
@@ -558,7 +569,6 @@ function renderAutoSummary(data){
 
   const todos = [];
   if(unknownScreenRate > 50) todos.push('Gắn logScreenView cho Trang chủ, Lịch làm, Công việc, Thống kê, Cài đặt.');
-  if(returnRate < 10) todos.push('Tạo lý do để người dùng mở lại app: nhắc ca làm, báo lương tháng, thẻ thống kê nhanh.');
   if(onboardingRate < 70) todos.push('Rút gọn phần giới thiệu ban đầu và dẫn người dùng tới bước tạo nơi làm việc đầu tiên.');
   if(latestRate < 50) todos.push('Đưa bản mới ổn định lên store và theo dõi tỷ lệ cập nhật theo phiên bản.');
   todos.push('Theo dõi lại luồng sử dụng sau 3–7 ngày để tránh kết luận quá sớm.');
@@ -610,9 +620,6 @@ function updatePeriodLabels(days){
   const newLabel = document.querySelector('#newUsers')?.closest('.card')?.querySelector('.label');
   if(newLabel) newLabel.textContent = 'Người dùng mới ' + days + ' ngày';
 
-  const returningLabel = document.querySelector('#returningUsers')?.closest('.card')?.querySelector('.label');
-  if(returningLabel) returningLabel.textContent = 'Người quay lại ' + days + ' ngày';
-
   const totalBox = document.querySelector('#totalDownloads')?.closest('.card');
   if(totalBox) totalBox.style.display = 'none';
 
@@ -626,8 +633,6 @@ function updatePeriodLabels(days){
 
 function setAppHealthScore(data){
   const mau = data.mau || 0;
-  const returning = data.returningUsersEstimate || 0;
-  const returnRate = mau ? Math.round((returning / mau) * 100) : 0;
   const latest = latestVersion(data);
   const latestUsers = activeByVersion(data, latest);
   const latestRate = mau ? Math.round((latestUsers / mau) * 100) : 0;
@@ -636,8 +641,6 @@ function setAppHealthScore(data){
   let score = 50;
   if(dau >= 5) score += 10;
   if(mau >= 50) score += 10;
-  if(returnRate >= 20) score += 15;
-  else if(returnRate >= 10) score += 8;
   if(latestRate >= 50) score += 10;
   else if(latestRate >= 25) score += 5;
   if(score > 100) score = 100;
@@ -650,7 +653,6 @@ function setAppHealthScore(data){
     if(dau >= 5) notes.push('User hôm nay ổn');
     else notes.push('User hôm nay thấp');
 
-    if(returnRate >= 20) notes.push('quay lại tốt');
     else notes.push('quay lại thấp');
 
     if(latestRate >= 50) notes.push('bản mới ổn');
@@ -802,7 +804,7 @@ async function loadData(days=30){
     const japan = (data.countries||[]).find(r => r.dimensions?.country === 'Japan')?.metrics?.activeUsers || 0;
     setText('dau', data.dau || 0);
     setText('mau', data.mau || 0);
-    setText('newUsers', data.newUsers || 0);    setText('returningUsers', data.returningUsersEstimate || 0);
+    setText('newUsers', data.newUsers || 0);
     setText('japan', japan);
     setText('wau', data.wau || 0);
     setText('mau30', data.mau30 || 0);
@@ -889,7 +891,6 @@ app.get('/api/summary', async (req, res) => {
       sessionsPerUser: Number(((sessionsTotal[0]?.metrics?.sessions || 0) / Math.max(mau[0]?.metrics?.activeUsers || 0, 1)).toFixed(1)),
       screensPerUser: Number(((screenViewsTotal[0]?.metrics?.screenPageViews || 0) / Math.max(mau[0]?.metrics?.activeUsers || 0, 1)).toFixed(1)),
       newUsers: newUsers[0]?.metrics?.newUsers || 0,
-      returningUsersEstimate: Math.max((mau[0]?.metrics?.activeUsers || 0) - (newUsers[0]?.metrics?.newUsers || 0), 0),
       tabUsageToday: buildTabUsage(tabUsageTodayRaw),
       tabUsageRange: buildTabUsage(tabUsageRangeRaw),
       tabUsageWeekly: buildWeeklyTabUsage(tabUsageDailyRaw),
