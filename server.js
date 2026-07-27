@@ -372,7 +372,9 @@ Các mục đánh giá, cảnh báo và gợi ý là phân tích nội bộ củ
     <div class="card"><div class="label">Tổng người dùng 30 ngày</div><div class="num" id="mau30">-</div></div>
     <div class="card"><div class="label">Tổng người dùng</div><div class="num" id="mau">-</div></div>
     <div class="card"><div class="label">Người dùng mới</div><div class="num" id="newUsers">-</div></div>
+    <div class="card"><div class="label">Người dùng quay lại</div><div class="num" id="returningUsers">-</div></div>
     <div class="card"><div class="label">Lượt sử dụng</div><div class="num" id="sessionsTotal">-</div></div>
+    <div class="card"><div class="label">Lượt sử dụng / người</div><div class="num" id="sessionsPerUser">-</div></div>
     <div class="card"><div class="label">Ở Nhật</div><div class="num" id="japan">-</div></div>
   </div>
 
@@ -805,6 +807,7 @@ async function loadData(days=30){
     setText('dau', data.dau || 0);
     setText('mau', data.mau || 0);
     setText('newUsers', data.newUsers || 0);
+    setText('returningUsers', data.returningUsers || 0);
     setText('japan', japan);
     setText('wau', data.wau || 0);
     setText('mau30', data.mau30 || 0);
@@ -893,6 +896,11 @@ app.get('/api/summary', async (req, res) => {
       sessionsPerUser: Number(((sessionsTotal[0]?.metrics?.sessions || 0) / Math.max(mau[0]?.metrics?.activeUsers || 0, 1)).toFixed(1)),
       screensPerUser: Number(((screenViewsTotal[0]?.metrics?.screenPageViews || 0) / Math.max(mau[0]?.metrics?.activeUsers || 0, 1)).toFixed(1)),
       newUsers: newUsers[0]?.metrics?.newUsers || 0,
+      returningUsers: Math.max(
+        (mau[0]?.metrics?.activeUsers || 0) -
+        (newUsers[0]?.metrics?.newUsers || 0),
+        0
+      ),
       tabUsageToday: buildTabUsage(tabUsageTodayRaw),
       tabUsageRange: buildTabUsage(tabUsageRangeRaw),
       tabUsageWeekly: buildWeeklyTabUsage(tabUsageDailyRaw),
