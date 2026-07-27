@@ -367,11 +367,12 @@ Các mục đánh giá, cảnh báo và gợi ý là phân tích nội bộ củ
       <div class="num" id="appHealthScore">-</div>
       <div class="hint" id="appHealthText">Phân tích nội bộ, không phải chỉ số chính thức của Google</div>
     </div>
-    <div class="card"><div class="label">Hôm nay</div><div class="num" id="dau">-</div></div>
-    <div class="card"><div class="label">7 ngày</div><div class="num" id="wau">-</div></div>
-    <div class="card"><div class="label">Người dùng 30 ngày</div><div class="num" id="mau30">-</div></div>
-    <div class="card"><div class="label">Người dùng hoạt động</div><div class="num" id="mau">-</div></div>
+    <div class="card"><div class="label">Tổng người dùng hôm nay</div><div class="num" id="dau">-</div></div>
+    <div class="card"><div class="label">Tổng người dùng 7 ngày</div><div class="num" id="wau">-</div></div>
+    <div class="card"><div class="label">Tổng người dùng 30 ngày</div><div class="num" id="mau30">-</div></div>
+    <div class="card"><div class="label">Tổng người dùng</div><div class="num" id="mau">-</div></div>
     <div class="card"><div class="label">Người dùng mới</div><div class="num" id="newUsers">-</div></div>
+    <div class="card"><div class="label">Lượt sử dụng</div><div class="num" id="sessionsTotal">-</div></div>
     <div class="card"><div class="label">Ở Nhật</div><div class="num" id="japan">-</div></div>
   </div>
 
@@ -379,7 +380,7 @@ Các mục đánh giá, cảnh báo và gợi ý là phân tích nội bộ củ
       <section class="card">
         <div class="summaryTitle">Hành vi mở tab / màn hình</div>
         <div class="usageHint">
-          Dùng để biết người dùng thực sự vào app để làm gì. Nên nhìn cả <b>user riêng biệt</b> và <b>lượt mở</b>, không chỉ nhìn lượt thô.
+          Dùng để biết người dùng thực sự vào app để làm gì. Nên nhìn cả <b>tổng người dùng</b> và <b>lượt sử dụng</b>, không chỉ nhìn một chỉ số.
         </div>
 
         <div class="tabUsageGrid">
@@ -401,7 +402,7 @@ Các mục đánh giá, cảnh báo và gợi ý là phân tích nội bộ củ
       </section>
 
 <section class="card" style="margin-top:18px">
-    <h2>Người dùng hoạt động mỗi ngày</h2>
+    <h2>Tổng người dùng theo ngày</h2>
     <div id="dailyChart" class="chartBox"></div>
     <div id="growthInsight" class="insight">Đang phân tích xu hướng...</div>
   </section>
@@ -615,7 +616,7 @@ function hideLessImportantSections(){
 
 function updatePeriodLabels(days){
   const activeLabel = document.querySelector('#mau')?.closest('.card')?.querySelector('.label');
-  if(activeLabel) activeLabel.textContent = 'Người dùng hoạt động ' + days + ' ngày';
+  if(activeLabel) activeLabel.textContent = 'Tổng người dùng ' + days + ' ngày';
 
   const newLabel = document.querySelector('#newUsers')?.closest('.card')?.querySelector('.label');
   if(newLabel) newLabel.textContent = 'Người dùng mới ' + days + ' ngày';
@@ -807,6 +808,7 @@ async function loadData(days=30){
     setText('japan', japan);
     setText('wau', data.wau || 0);
     setText('mau30', data.mau30 || 0);
+    setText('sessionsTotal', data.sessionsTotal || 0);
     setText('sessionsPerUser', data.sessionsPerUser || 0);
     setText('screensPerUser', data.screensPerUser || 0);
 
@@ -887,6 +889,7 @@ app.get('/api/summary', async (req, res) => {
       mau: mau[0]?.metrics?.activeUsers || 0,
       wau: wau[0]?.metrics?.activeUsers || 0,
       mau30: mau30[0]?.metrics?.activeUsers || 0,
+      sessionsTotal: sessionsTotal[0]?.metrics?.sessions || 0,
       sessionsPerUser: Number(((sessionsTotal[0]?.metrics?.sessions || 0) / Math.max(mau[0]?.metrics?.activeUsers || 0, 1)).toFixed(1)),
       screensPerUser: Number(((screenViewsTotal[0]?.metrics?.screenPageViews || 0) / Math.max(mau[0]?.metrics?.activeUsers || 0, 1)).toFixed(1)),
       newUsers: newUsers[0]?.metrics?.newUsers || 0,
