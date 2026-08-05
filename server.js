@@ -322,7 +322,31 @@ svg{width:100%;height:100%}.axis{stroke:#e5e7eb;stroke-width:1}.line{fill:none;s
       box-shadow:0 1px 0 #e5e7eb;
     }
 
-  </style>
+  
+
+.platformBar{
+  margin-top:10px;
+  height:8px;
+  background:#e5e7eb;
+  border-radius:999px;
+  overflow:hidden;
+}
+
+.platformFill{
+  height:100%;
+  background:linear-gradient(90deg,#2563eb,#60a5fa);
+  width:0%;
+  transition:width .4s;
+}
+
+.platformPct{
+  margin-top:6px;
+  font-size:13px;
+  font-weight:800;
+  color:#475569;
+}
+
+</style>
 </head>
 <body>
 <header>
@@ -375,12 +399,14 @@ Các mục đánh giá, cảnh báo và gợi ý là phân tích nội bộ củ
     <div class="card">
       <div class="label">Android</div>
       <div class="num" id="androidDownloads">-</div>
-      <div class="note">Lượt mở lần đầu trên Android</div>
+      <div class="platformPct" id="androidPct">-</div>
+      <div class="platformBar"><div class="platformFill" id="androidBar"></div></div>
     </div>
     <div class="card">
       <div class="label">iOS</div>
       <div class="num" id="iosDownloads">-</div>
-      <div class="note">Lượt mở lần đầu trên iOS</div>
+      <div class="platformPct" id="iosPct">-</div>
+      <div class="platformBar"><div class="platformFill" id="iosBar"></div></div>
     </div>
     <div class="card"><div class="label">Tổng người dùng hôm nay</div><div class="num" id="dau">-</div></div>
     <div class="card"><div class="label" id="periodUsersLabel">Tổng người dùng 30 ngày</div><div class="num" id="mau">-</div></div>
@@ -811,6 +837,16 @@ async function loadData(days=30){
     setText('totalDownloads', Number(data.totalDownloads || 0).toLocaleString('vi-VN'));
     setText('androidDownloads', Number(data.androidDownloads || 0).toLocaleString('vi-VN'));
     setText('iosDownloads', Number(data.iosDownloads || 0).toLocaleString('vi-VN'));
+
+    const totalInstall = Math.max(Number(data.totalDownloads||0),1);
+    const androidPct = (Number(data.androidDownloads||0)*100/totalInstall).toFixed(1);
+    const iosPct = (Number(data.iosDownloads||0)*100/totalInstall).toFixed(1);
+
+    document.getElementById('androidPct').textContent = androidPct + '%';
+    document.getElementById('iosPct').textContent = iosPct + '%';
+
+    document.getElementById('androidBar').style.width = androidPct + '%';
+    document.getElementById('iosBar').style.width = iosPct + '%';
     setText('dau', data.dau || 0);
     setText('mau', data.mau || 0);
     setText('newUsers', data.newUsers || 0);
