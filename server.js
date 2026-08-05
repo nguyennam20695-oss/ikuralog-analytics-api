@@ -973,6 +973,14 @@ app.get('/api/summary', async (req, res) => {
         0
       );
 
+    console.log("\n===== FIRST_OPEN BY PLATFORM =====");
+    console.table(
+      (downloadsByPlatform || []).map(r => ({
+        operatingSystem: r.dimensions?.operatingSystem,
+        eventCount: Number(r.metrics?.eventCount || 0)
+      }))
+    );
+
     res.json({
       ok: true,
       days,
