@@ -383,9 +383,7 @@ Các mục đánh giá, cảnh báo và gợi ý là phân tích nội bộ củ
       <div class="note">Lượt mở lần đầu trên iOS</div>
     </div>
     <div class="card"><div class="label">Tổng người dùng hôm nay</div><div class="num" id="dau">-</div></div>
-    <div class="card"><div class="label">Tổng người dùng 7 ngày</div><div class="num" id="wau">-</div></div>
-    <div class="card"><div class="label">Tổng người dùng 30 ngày</div><div class="num" id="mau30">-</div></div>
-    <div class="card"><div class="label">Tổng người dùng</div><div class="num" id="mau">-</div></div>
+    <div class="card"><div class="label" id="periodUsersLabel">Tổng người dùng 30 ngày</div><div class="num" id="mau">-</div></div>
     <div class="card"><div class="label">Người dùng mới</div><div class="num" id="newUsers">-</div></div>
     <div class="card"><div class="label">Người dùng quay lại</div><div class="num" id="returningUsers">-</div></div>
     <div class="card"><div class="label">Lượt sử dụng</div><div class="num" id="sessionsTotal">-</div></div>
@@ -632,17 +630,11 @@ function hideLessImportantSections(){
 
 
 function updatePeriodLabels(days){
-  const activeLabel = document.querySelector('#mau')?.closest('.card')?.querySelector('.label');
+  const activeLabel = document.getElementById('periodUsersLabel');
   if(activeLabel) activeLabel.textContent = 'Tổng người dùng ' + days + ' ngày';
 
   const newLabel = document.querySelector('#newUsers')?.closest('.card')?.querySelector('.label');
   if(newLabel) newLabel.textContent = 'Người dùng mới ' + days + ' ngày';
-
-  const wauBox = document.querySelector('#wau')?.closest('.card');
-  if(wauBox) wauBox.style.display = days === 30 ? '' : 'none';
-
-  const mau30Box = document.querySelector('#mau30')?.closest('.card');
-  if(mau30Box) mau30Box.style.display = days === 7 ? '' : 'none';
 }
 
 
@@ -824,8 +816,6 @@ async function loadData(days=30){
     setText('newUsers', data.newUsers || 0);
     setText('returningUsers', data.returningUsers || 0);
     setText('japan', japan);
-    setText('wau', data.wau || 0);
-    setText('mau30', data.mau30 || 0);
     setText('sessionsTotal', data.sessionsTotal || 0);
     setText('sessionsPerUser', data.sessionsPerUser || 0);
     setText('screensPerUser', data.screensPerUser || 0);
