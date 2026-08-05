@@ -46,8 +46,8 @@ const client = serviceAccountJson
 
 
 async function getTotalDownloads() {
-  const [response] = await analyticsDataClient.runReport({
-    property: `properties/${GA4_PROPERTY_ID}`,
+  const [response] = await client.runReport({
+    property: `properties/${propertyId}`,
     dateRanges: [
       {
         startDate: '2020-01-01',
@@ -367,6 +367,21 @@ Các mục đánh giá, cảnh báo và gợi ý là phân tích nội bộ củ
       <div class="num" id="appHealthScore">-</div>
       <div class="hint" id="appHealthText">Phân tích nội bộ, không phải chỉ số chính thức của Google</div>
     </div>
+    <div class="card">
+      <div class="label">Tổng lượt cài đặt</div>
+      <div class="num" id="totalDownloads">-</div>
+      <div class="note">Ghi nhận qua sự kiện first_open của GA4</div>
+    </div>
+    <div class="card">
+      <div class="label">Android</div>
+      <div class="num" id="androidDownloads">-</div>
+      <div class="note">Lượt mở lần đầu trên Android</div>
+    </div>
+    <div class="card">
+      <div class="label">iOS</div>
+      <div class="num" id="iosDownloads">-</div>
+      <div class="note">Lượt mở lần đầu trên iOS</div>
+    </div>
     <div class="card"><div class="label">Tổng người dùng hôm nay</div><div class="num" id="dau">-</div></div>
     <div class="card"><div class="label">Tổng người dùng 7 ngày</div><div class="num" id="wau">-</div></div>
     <div class="card"><div class="label">Tổng người dùng 30 ngày</div><div class="num" id="mau30">-</div></div>
@@ -623,9 +638,6 @@ function updatePeriodLabels(days){
   const newLabel = document.querySelector('#newUsers')?.closest('.card')?.querySelector('.label');
   if(newLabel) newLabel.textContent = 'Người dùng mới ' + days + ' ngày';
 
-  const totalBox = document.querySelector('#totalDownloads')?.closest('.card');
-  if(totalBox) totalBox.style.display = 'none';
-
   const wauBox = document.querySelector('#wau')?.closest('.card');
   if(wauBox) wauBox.style.display = days === 30 ? '' : 'none';
 
@@ -804,6 +816,9 @@ async function loadData(days=30){
     if(!data.ok) throw new Error(data.error || 'API error');
 
     const japan = (data.countries||[]).find(r => r.dimensions?.country === 'Japan')?.metrics?.activeUsers || 0;
+    setText('totalDownloads', Number(data.totalDownloads || 0).toLocaleString('vi-VN'));
+    setText('androidDownloads', Number(data.androidDownloads || 0).toLocaleString('vi-VN'));
+    setText('iosDownloads', Number(data.iosDownloads || 0).toLocaleString('vi-VN'));
     setText('dau', data.dau || 0);
     setText('mau', data.mau || 0);
     setText('newUsers', data.newUsers || 0);
@@ -851,7 +866,7 @@ app.get('/api/summary', async (req, res) => {
     const requestedDays = Number(req.query.days || 30);
     const days = [7, 30, 90].includes(requestedDays) ? requestedDays : 30;
     const startDate = days + 'daysAgo';
-    const [dau, mau, wau, mau30, sessionsTotal, screenViewsTotal, countries, events, devices, versions, languages, screens, dailyUsers, newUsers, tabUsageTodayRaw, tabUsageRangeRaw, tabUsageDailyRaw] = await Promise.all([
+    const [dau, mau, wau, mau30, sessionsTotal, screenViewsTotal, countries, events, devices, versions, languages, screens, dailyUsers, newUsers, tabUsageTodayRaw, tabUsageRangeRaw, tabUsageDailyRaw, downloadsByPlatform] = await Promise.all([
       safeReport({ startDate:'today', metrics:['activeUsers'] }),
       safeReport({ startDate, metrics:['activeUsers'] }),
       safeReport({ startDate:'7daysAgo', metrics:['activeUsers'] }),
@@ -882,12 +897,62 @@ app.get('/api/summary', async (req, res) => {
             }
           }
         }
+      }),
+      safeReport({
+        startDate:'2020-01-01',
+        dimensions:['operatingSystem'],
+        metrics:['eventCount'],
+        limit:20,
+        dimensionFilter: {
+          filter: {
+            fieldName: 'eventName',
+            stringFilter: {
+              matchType: 'EXACT',
+              value: 'first_open'
+            }
+          }
+        }
       })
     ]);
+
+    const androidDownloads = (downloadsByPlatform || [])
+      .filter(row =>
+        String(row.dimensions?.operatingSystem || '')
+          .toLowerCase()
+          .includes('android')
+      )
+      .reduce(
+        (sum, row) => sum + Number(row.metrics?.eventCount || 0),
+        0
+      );
+
+    const iosDownloads = (downloadsByPlatform || [])
+      .filter(row => {
+        const os = String(
+          row.dimensions?.operatingSystem || ''
+        ).toLowerCase();
+
+        return os === 'ios' ||
+          os.includes('iphone') ||
+          os.includes('ipad');
+      })
+      .reduce(
+        (sum, row) => sum + Number(row.metrics?.eventCount || 0),
+        0
+      );
+
+    const totalDownloads = (downloadsByPlatform || [])
+      .reduce(
+        (sum, row) => sum + Number(row.metrics?.eventCount || 0),
+        0
+      );
 
     res.json({
       ok: true,
       days,
+      totalDownloads,
+      androidDownloads,
+      iosDownloads,
       dau: dau[0]?.metrics?.activeUsers || 0,
       mau: mau[0]?.metrics?.activeUsers || 0,
       wau: wau[0]?.metrics?.activeUsers || 0,
